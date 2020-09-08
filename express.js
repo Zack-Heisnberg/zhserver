@@ -100,7 +100,7 @@ exports.default = (function () {
                                 return [3 /*break*/, 9];
                             case 8:
                                 err_1 = _a.sent();
-                                socket.emit('error', 'Action' + index + 'Faied 10s Timeout' + err_1);
+                                socket.emit('message', 'Action' + index + 'Faied 10s Timeout' + err_1);
                                 throw err_1;
                             case 9: return [3 /*break*/, 30];
                             case 10:
@@ -118,7 +118,7 @@ exports.default = (function () {
                                 return [3 /*break*/, 15];
                             case 14:
                                 err_2 = _a.sent();
-                                socket.emit('error', 'Action' + index + 'Faied 10s Timeout' + err_2);
+                                socket.emit('message', 'Action' + index + 'Faied 10s Timeout' + err_2);
                                 throw err_2;
                             case 15: return [3 /*break*/, 30];
                             case 16:
@@ -146,7 +146,7 @@ exports.default = (function () {
                                 return [3 /*break*/, 25];
                             case 24:
                                 err_3 = _a.sent();
-                                socket.emit('error', 'Action' + index + 'Faied 10s Timeout' + err_3);
+                                socket.emit('message', 'Action' + index + 'Faied 10s Timeout' + err_3);
                                 throw err_3;
                             case 25: return [3 /*break*/, 30];
                             case 26:
@@ -158,7 +158,7 @@ exports.default = (function () {
                             case 28:
                                 if (!(action[0] === 4)) return [3 /*break*/, 30];
                                 return [4 /*yield*/, page.evaluate(function (_) {
-                                        window.scrollBy(0, 300);
+                                        window.scrollBy(0, 1200);
                                     })];
                             case 29:
                                 _a.sent();
@@ -192,7 +192,7 @@ exports.default = (function () {
                                 filepath = socket.id + '-page.png';
                                 return [3 /*break*/, 37];
                             case 36:
-                                socket.emit('error', 'Type should be 1 - mhtml , 2 - Image');
+                                socket.emit('message', 'Type should be 1 - mhtml , 2 - Image');
                                 _a.label = 37;
                             case 37:
                                 socket.emit('info', 'Uploading File');
@@ -233,7 +233,7 @@ exports.default = (function () {
                                         }
                                         else {
                                             console.log('error', error);
-                                            socket.emit('error', error.message);
+                                            socket.emit('message', error.message);
                                         }
                                     });
                                     file_1.close();
@@ -242,7 +242,7 @@ exports.default = (function () {
                                     .catch(function (error) {
                                     if (error.response.data) {
                                         console.log(error.response.data);
-                                        socket.emit('error', error.response.data);
+                                        socket.emit('message', error.response.data);
                                         if (error.response.data.error.error_subcode === 2018047) {
                                             socket.emit('info', 'Media type failed, Retrying with zip + txt');
                                         }
@@ -252,7 +252,7 @@ exports.default = (function () {
                                     }
                                     else {
                                         console.log('error', error);
-                                        socket.emit('error', error.message);
+                                        socket.emit('message', error.message);
                                     }
                                     file_1.close();
                                     browser_1.close();
@@ -261,7 +261,7 @@ exports.default = (function () {
                             case 38:
                                 err_4 = _a.sent();
                                 console.error(err_4);
-                                socket.emit('error', err_4.message);
+                                socket.emit('message', err_4.message);
                                 return [3 /*break*/, 39];
                             case 39: return [2 /*return*/];
                         }

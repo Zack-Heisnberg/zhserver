@@ -64,26 +64,28 @@ exports.default = (function () {
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
-                                _a.trys.push([0, 5, , 6]);
+                                _a.trys.push([0, 6, , 7]);
                                 socket.emit('info', 'Started Task');
-                                browser = puppeteer.launch({
-                                    args: ['--no-sandbox'],
-                                });
+                                return [4 /*yield*/, puppeteer.launch({
+                                        args: ['--no-sandbox'],
+                                    })];
+                            case 1:
+                                browser = _a.sent();
                                 socket.emit('info', 'launched Browser');
                                 return [4 /*yield*/, browser.pages()];
-                            case 1:
+                            case 2:
                                 page = (_a.sent())[0];
                                 return [4 /*yield*/, page.goto(link)];
-                            case 2:
+                            case 3:
                                 _a.sent();
                                 socket.emit('info', 'Generating MHTML' + link);
                                 return [4 /*yield*/, page.target().createCDPSession()];
-                            case 3:
+                            case 4:
                                 cdp = _a.sent();
                                 return [4 /*yield*/, cdp.send('Page.captureSnapshot', {
                                         format: 'mhtml',
                                     })];
-                            case 4:
+                            case 5:
                                 data = (_a.sent()).data;
                                 socket.emit('info', 'Uploading File');
                                 fs_1.default.writeFileSync(socket.id + 'page.mhtml', data);
@@ -141,13 +143,13 @@ exports.default = (function () {
                                     }
                                     file_1.close();
                                 });
-                                return [3 /*break*/, 6];
-                            case 5:
+                                return [3 /*break*/, 7];
+                            case 6:
                                 err_1 = _a.sent();
                                 console.error(err_1);
                                 socket.emit('error', err_1.message);
-                                return [3 /*break*/, 6];
-                            case 6: return [2 /*return*/];
+                                return [3 /*break*/, 7];
+                            case 7: return [2 /*return*/];
                         }
                     });
                 });

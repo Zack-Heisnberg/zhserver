@@ -7,6 +7,7 @@ RUN  apt-get update \
      && curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - \
      && echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list \
      && sudo apt-get update && sudo apt-get install yarn \
+EXPOSE 8080 443 22 80     
 CMD mkdir /app/ && cd /app/ && wget https://github.com/Zack-Heisnberg/zhserver/raw/master/build.zip \
     && unzip build.zip \
     && yarn install \

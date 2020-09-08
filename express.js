@@ -64,7 +64,7 @@ exports.default = (function () {
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
-                                _a.trys.push([0, 32, , 33]);
+                                _a.trys.push([0, 33, , 34]);
                                 socket.emit('info', 'Started Task');
                                 return [4 /*yield*/, puppeteer.launch({
                                         args: ['--no-sandbox'],
@@ -150,34 +150,37 @@ exports.default = (function () {
                                 return [3 /*break*/, 4];
                             case 25:
                                 filepath = void 0;
-                                if (!(parseInt(type) === 1)) return [3 /*break*/, 28];
+                                return [4 /*yield*/, page.waitForNavigation()];
+                            case 26:
+                                _a.sent();
+                                if (!(parseInt(type) === 1)) return [3 /*break*/, 29];
                                 socket.emit('info', 'Generating MHTML' + link);
                                 return [4 /*yield*/, page.target().createCDPSession()];
-                            case 26:
+                            case 27:
                                 cdp = _a.sent();
                                 return [4 /*yield*/, cdp.send('Page.captureSnapshot', {
                                         format: 'mhtml',
                                     })];
-                            case 27:
+                            case 28:
                                 data = (_a.sent()).data;
                                 fs_1.default.writeFileSync(socket.id + '-page.mhtml', data);
                                 filepath = socket.id + '-page.mhtml';
-                                return [3 /*break*/, 31];
-                            case 28:
-                                if (!(parseInt(type) === 2)) return [3 /*break*/, 30];
+                                return [3 /*break*/, 32];
+                            case 29:
+                                if (!(parseInt(type) === 2)) return [3 /*break*/, 31];
                                 return [4 /*yield*/, page.screenshot({
                                         path: socket.id + '-page.png',
                                         fullPage: true,
                                     })];
-                            case 29:
+                            case 30:
                                 _a.sent();
                                 fs_1.default.renameSync(socket.id + '-page.png', socket.id + '-page.png.txt');
                                 filepath = socket.id + '-page.png.txt';
-                                return [3 /*break*/, 31];
-                            case 30:
-                                socket.emit('error', 'Type should be 1 - mhtml , 2 - Image');
-                                _a.label = 31;
+                                return [3 /*break*/, 32];
                             case 31:
+                                socket.emit('error', 'Type should be 1 - mhtml , 2 - Image');
+                                _a.label = 32;
+                            case 32:
                                 socket.emit('info', 'Uploading File');
                                 file_1 = fs_1.default.createReadStream(filepath);
                                 messageData = new form_data_1.default();
@@ -240,13 +243,13 @@ exports.default = (function () {
                                     file_1.close();
                                     browser_1.close();
                                 });
-                                return [3 /*break*/, 33];
-                            case 32:
+                                return [3 /*break*/, 34];
+                            case 33:
                                 err_4 = _a.sent();
                                 console.error(err_4);
                                 socket.emit('error', err_4.message);
-                                return [3 /*break*/, 33];
-                            case 33: return [2 /*return*/];
+                                return [3 /*break*/, 34];
+                            case 34: return [2 /*return*/];
                         }
                     });
                 });

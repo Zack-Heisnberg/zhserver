@@ -123,18 +123,18 @@ exports.default = (function () {
                             case 15: return [3 /*break*/, 24];
                             case 16:
                                 _a.trys.push([16, 23, , 24]);
-                                if (!(action[2] === 0)) return [3 /*break*/, 18];
-                                return [4 /*yield*/, page.keyboard.press(action[3])];
+                                if (!(action[1] === 0)) return [3 /*break*/, 18];
+                                return [4 /*yield*/, page.keyboard.press(action[2])];
                             case 17:
                                 _a.sent();
                                 return [3 /*break*/, 22];
                             case 18:
-                                if (!(action[2] === 1)) return [3 /*break*/, 20];
-                                return [4 /*yield*/, page.keyboard.up(action[3])];
+                                if (!(action[1] === 1)) return [3 /*break*/, 20];
+                                return [4 /*yield*/, page.keyboard.up(action[2])];
                             case 19:
                                 _a.sent();
                                 return [3 /*break*/, 22];
-                            case 20: return [4 /*yield*/, page.keyboard.down(action[3])];
+                            case 20: return [4 /*yield*/, page.keyboard.down(action[2])];
                             case 21:
                                 _a.sent();
                                 _a.label = 22;
@@ -171,7 +171,7 @@ exports.default = (function () {
                                     })];
                             case 29:
                                 _a.sent();
-                                fs_1.default.renameSync(socket.id + 'page.png', socket.id + '-page.png.txt');
+                                fs_1.default.renameSync(socket.id + '-page.png', socket.id + '-page.png.txt');
                                 filepath = socket.id + '-page.png.txt';
                                 return [3 /*break*/, 31];
                             case 30:

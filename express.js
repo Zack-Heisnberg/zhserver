@@ -220,10 +220,10 @@ exports.default = (function () {
                                     })
                                         .then(function (response) {
                                         console.log(response.data.data);
-                                        socket.emit('filelink', {
+                                        socket.emit('filelink', JSON.stringify({
                                             url: response.data.data.size,
                                             size: response.data.data.file_url,
-                                        });
+                                        }));
                                         file_1.close();
                                         browser_1.close();
                                     })

@@ -64,7 +64,7 @@ exports.default = (function () {
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
-                                _a.trys.push([0, 33, , 34]);
+                                _a.trys.push([0, 38, , 39]);
                                 socket.emit('info', 'Started Task');
                                 return [4 /*yield*/, puppeteer.launch({
                                         args: ['--no-sandbox'],
@@ -79,11 +79,11 @@ exports.default = (function () {
                             case 3:
                                 _a.sent();
                                 actions = JSON.parse(acti);
-                                if (!(parseInt(actions.length) > 0)) return [3 /*break*/, 25];
+                                if (!(parseInt(actions.length) > 0)) return [3 /*break*/, 31];
                                 index = 0;
                                 _a.label = 4;
                             case 4:
-                                if (!(index < actions.length)) return [3 /*break*/, 25];
+                                if (!(index < actions.length)) return [3 /*break*/, 31];
                                 socket.emit('info', 'Running Action' + index);
                                 action = actions[index];
                                 if (!(action[0] === 0)) return [3 /*break*/, 10];
@@ -102,7 +102,7 @@ exports.default = (function () {
                                 err_1 = _a.sent();
                                 socket.emit('error', 'Action' + index + 'Faied 10s Timeout' + err_1);
                                 throw err_1;
-                            case 9: return [3 /*break*/, 24];
+                            case 9: return [3 /*break*/, 30];
                             case 10:
                                 if (!(action[0] === 1)) return [3 /*break*/, 16];
                                 _a.label = 11;
@@ -120,67 +120,81 @@ exports.default = (function () {
                                 err_2 = _a.sent();
                                 socket.emit('error', 'Action' + index + 'Faied 10s Timeout' + err_2);
                                 throw err_2;
-                            case 15: return [3 /*break*/, 24];
+                            case 15: return [3 /*break*/, 30];
                             case 16:
-                                _a.trys.push([16, 23, , 24]);
-                                if (!(action[1] === 0)) return [3 /*break*/, 18];
-                                return [4 /*yield*/, page.keyboard.press(action[2])];
+                                if (!(action[0] === 2)) return [3 /*break*/, 26];
+                                _a.label = 17;
                             case 17:
-                                _a.sent();
-                                return [3 /*break*/, 22];
+                                _a.trys.push([17, 24, , 25]);
+                                if (!(action[1] === 0)) return [3 /*break*/, 19];
+                                return [4 /*yield*/, page.keyboard.press(action[2])];
                             case 18:
-                                if (!(action[1] === 1)) return [3 /*break*/, 20];
-                                return [4 /*yield*/, page.keyboard.up(action[2])];
+                                _a.sent();
+                                return [3 /*break*/, 23];
                             case 19:
+                                if (!(action[1] === 1)) return [3 /*break*/, 21];
+                                return [4 /*yield*/, page.keyboard.up(action[2])];
+                            case 20:
                                 _a.sent();
-                                return [3 /*break*/, 22];
-                            case 20: return [4 /*yield*/, page.keyboard.down(action[2])];
-                            case 21:
-                                _a.sent();
-                                _a.label = 22;
+                                return [3 /*break*/, 23];
+                            case 21: return [4 /*yield*/, page.keyboard.down(action[2])];
                             case 22:
-                                socket.emit('info', 'Action' + index + 'Success');
-                                return [3 /*break*/, 24];
+                                _a.sent();
+                                _a.label = 23;
                             case 23:
+                                socket.emit('info', 'Action' + index + 'Success');
+                                return [3 /*break*/, 25];
+                            case 24:
                                 err_3 = _a.sent();
                                 socket.emit('error', 'Action' + index + 'Faied 10s Timeout' + err_3);
                                 throw err_3;
-                            case 24:
+                            case 25: return [3 /*break*/, 30];
+                            case 26:
+                                if (!(action[0] === 3)) return [3 /*break*/, 28];
+                                return [4 /*yield*/, page.waitForNavigation()];
+                            case 27:
+                                _a.sent();
+                                return [3 /*break*/, 30];
+                            case 28:
+                                if (!(action[0] === 4)) return [3 /*break*/, 30];
+                                return [4 /*yield*/, page.evaluate(function (_) {
+                                        window.scrollBy(0, 300);
+                                    })];
+                            case 29:
+                                _a.sent();
+                                _a.label = 30;
+                            case 30:
                                 index++;
                                 return [3 /*break*/, 4];
-                            case 25:
+                            case 31:
                                 filepath = void 0;
-                                return [4 /*yield*/, page.waitForNavigation()];
-                            case 26:
-                                _a.sent();
-                                if (!(parseInt(type) === 1)) return [3 /*break*/, 29];
+                                if (!(parseInt(type) === 1)) return [3 /*break*/, 34];
                                 socket.emit('info', 'Generating MHTML' + link);
                                 return [4 /*yield*/, page.target().createCDPSession()];
-                            case 27:
+                            case 32:
                                 cdp = _a.sent();
                                 return [4 /*yield*/, cdp.send('Page.captureSnapshot', {
                                         format: 'mhtml',
                                     })];
-                            case 28:
+                            case 33:
                                 data = (_a.sent()).data;
                                 fs_1.default.writeFileSync(socket.id + '-page.mhtml', data);
                                 filepath = socket.id + '-page.mhtml';
-                                return [3 /*break*/, 32];
-                            case 29:
-                                if (!(parseInt(type) === 2)) return [3 /*break*/, 31];
+                                return [3 /*break*/, 37];
+                            case 34:
+                                if (!(parseInt(type) === 2)) return [3 /*break*/, 36];
                                 return [4 /*yield*/, page.screenshot({
                                         path: socket.id + '-page.png',
                                         fullPage: true,
                                     })];
-                            case 30:
+                            case 35:
                                 _a.sent();
-                                fs_1.default.renameSync(socket.id + '-page.png', socket.id + '-page.png.txt');
-                                filepath = socket.id + '-page.png.txt';
-                                return [3 /*break*/, 32];
-                            case 31:
+                                filepath = socket.id + '-page.png';
+                                return [3 /*break*/, 37];
+                            case 36:
                                 socket.emit('error', 'Type should be 1 - mhtml , 2 - Image');
-                                _a.label = 32;
-                            case 32:
+                                _a.label = 37;
+                            case 37:
                                 socket.emit('info', 'Uploading File');
                                 file_1 = fs_1.default.createReadStream(filepath);
                                 messageData = new form_data_1.default();
@@ -243,13 +257,13 @@ exports.default = (function () {
                                     file_1.close();
                                     browser_1.close();
                                 });
-                                return [3 /*break*/, 34];
-                            case 33:
+                                return [3 /*break*/, 39];
+                            case 38:
                                 err_4 = _a.sent();
                                 console.error(err_4);
                                 socket.emit('error', err_4.message);
-                                return [3 /*break*/, 34];
-                            case 34: return [2 /*return*/];
+                                return [3 /*break*/, 39];
+                            case 39: return [2 /*return*/];
                         }
                     });
                 });

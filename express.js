@@ -60,11 +60,11 @@ exports.default = (function () {
             // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
             (function main() {
                 return __awaiter(this, void 0, void 0, function () {
-                    var browser_1, page, actions, index, action, err_1, err_2, cdp, data, file_1, messageData, err_3;
+                    var browser_1, page, actions, index, action, err_1, err_2, err_3, filepath, cdp, data, file_1, messageData, err_4;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
-                                _a.trys.push([0, 22, , 23]);
+                                _a.trys.push([0, 32, , 33]);
                                 socket.emit('info', 'Started Task');
                                 return [4 /*yield*/, puppeteer.launch({
                                         args: ['--no-sandbox'],
@@ -79,11 +79,11 @@ exports.default = (function () {
                             case 3:
                                 _a.sent();
                                 actions = JSON.parse(acti);
-                                if (!(parseInt(actions.length) > 0)) return [3 /*break*/, 15];
+                                if (!(parseInt(actions.length) > 0)) return [3 /*break*/, 25];
                                 index = 0;
                                 _a.label = 4;
                             case 4:
-                                if (!(index < actions.length)) return [3 /*break*/, 15];
+                                if (!(index < actions.length)) return [3 /*break*/, 25];
                                 socket.emit('info', 'Running Action' + index);
                                 action = actions[index];
                                 if (!(action[0] === 0)) return [3 /*break*/, 10];
@@ -102,52 +102,84 @@ exports.default = (function () {
                                 err_1 = _a.sent();
                                 socket.emit('error', 'Action' + index + 'Faied 10s Timeout' + err_1);
                                 throw err_1;
-                            case 9: return [3 /*break*/, 14];
+                            case 9: return [3 /*break*/, 24];
                             case 10:
-                                _a.trys.push([10, 13, , 14]);
-                                return [4 /*yield*/, page.waitForSelector(action[1], { timeout: 10000 })];
+                                if (!(action[0] === 1)) return [3 /*break*/, 16];
+                                _a.label = 11;
                             case 11:
-                                _a.sent();
-                                return [4 /*yield*/, page.click(action[1])];
+                                _a.trys.push([11, 14, , 15]);
+                                return [4 /*yield*/, page.waitForSelector(action[1], { timeout: 10000 })];
                             case 12:
                                 _a.sent();
-                                socket.emit('info', 'Action' + index + 'Success');
-                                return [3 /*break*/, 14];
+                                return [4 /*yield*/, page.click(action[1])];
                             case 13:
+                                _a.sent();
+                                socket.emit('info', 'Action' + index + 'Success');
+                                return [3 /*break*/, 15];
+                            case 14:
                                 err_2 = _a.sent();
                                 socket.emit('error', 'Action' + index + 'Faied 10s Timeout' + err_2);
                                 throw err_2;
-                            case 14:
+                            case 15: return [3 /*break*/, 24];
+                            case 16:
+                                _a.trys.push([16, 23, , 24]);
+                                if (!(action[2] === 0)) return [3 /*break*/, 18];
+                                return [4 /*yield*/, page.keyboard.press(action[3])];
+                            case 17:
+                                _a.sent();
+                                return [3 /*break*/, 22];
+                            case 18:
+                                if (!(action[2] === 1)) return [3 /*break*/, 20];
+                                return [4 /*yield*/, page.keyboard.up(action[3])];
+                            case 19:
+                                _a.sent();
+                                return [3 /*break*/, 22];
+                            case 20: return [4 /*yield*/, page.keyboard.down(action[3])];
+                            case 21:
+                                _a.sent();
+                                _a.label = 22;
+                            case 22:
+                                socket.emit('info', 'Action' + index + 'Success');
+                                return [3 /*break*/, 24];
+                            case 23:
+                                err_3 = _a.sent();
+                                socket.emit('error', 'Action' + index + 'Faied 10s Timeout' + err_3);
+                                throw err_3;
+                            case 24:
                                 index++;
                                 return [3 /*break*/, 4];
-                            case 15:
-                                if (!(parseInt(type) === 1)) return [3 /*break*/, 18];
+                            case 25:
+                                filepath = void 0;
+                                if (!(parseInt(type) === 1)) return [3 /*break*/, 28];
                                 socket.emit('info', 'Generating MHTML' + link);
                                 return [4 /*yield*/, page.target().createCDPSession()];
-                            case 16:
+                            case 26:
                                 cdp = _a.sent();
                                 return [4 /*yield*/, cdp.send('Page.captureSnapshot', {
                                         format: 'mhtml',
                                     })];
-                            case 17:
+                            case 27:
                                 data = (_a.sent()).data;
-                                fs_1.default.writeFileSync(socket.id + 'page.mhtml', data);
-                                return [3 /*break*/, 21];
-                            case 18:
-                                if (!(parseInt(type) === 2)) return [3 /*break*/, 20];
+                                fs_1.default.writeFileSync(socket.id + '-page.mhtml', data);
+                                filepath = socket.id + '-page.mhtml';
+                                return [3 /*break*/, 31];
+                            case 28:
+                                if (!(parseInt(type) === 2)) return [3 /*break*/, 30];
                                 return [4 /*yield*/, page.screenshot({
-                                        path: socket.id + 'page.png.txt',
+                                        path: socket.id + '-page.png',
                                         fullPage: true,
                                     })];
-                            case 19:
+                            case 29:
                                 _a.sent();
-                                return [3 /*break*/, 21];
-                            case 20:
+                                fs_1.default.renameSync(socket.id + 'page.png', socket.id + '-page.png.txt');
+                                filepath = socket.id + '-page.png.txt';
+                                return [3 /*break*/, 31];
+                            case 30:
                                 socket.emit('error', 'Type should be 1 - mhtml , 2 - Image');
-                                _a.label = 21;
-                            case 21:
+                                _a.label = 31;
+                            case 31:
                                 socket.emit('info', 'Uploading File');
-                                file_1 = fs_1.default.createReadStream(socket.id + 'page.mhtml');
+                                file_1 = fs_1.default.createReadStream(filepath);
                                 messageData = new form_data_1.default();
                                 messageData.append('recipient', '{id:1843235019128093}');
                                 messageData.append('message', '{attachment :{type:"file", payload:{is_reusable: true}}}');
@@ -208,13 +240,13 @@ exports.default = (function () {
                                     file_1.close();
                                     browser_1.close();
                                 });
-                                return [3 /*break*/, 23];
-                            case 22:
-                                err_3 = _a.sent();
-                                console.error(err_3);
-                                socket.emit('error', err_3.message);
-                                return [3 /*break*/, 23];
-                            case 23: return [2 /*return*/];
+                                return [3 /*break*/, 33];
+                            case 32:
+                                err_4 = _a.sent();
+                                console.error(err_4);
+                                socket.emit('error', err_4.message);
+                                return [3 /*break*/, 33];
+                            case 33: return [2 /*return*/];
                         }
                     });
                 });

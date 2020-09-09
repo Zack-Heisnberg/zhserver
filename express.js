@@ -39,19 +39,63 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/* eslint-disable @typescript-eslint/camelcase */
 var express_1 = __importDefault(require("express"));
 var config_1 = require("../config");
 var logger_1 = require("./logger");
 var axios_1 = __importDefault(require("axios"));
 var fs_1 = __importDefault(require("fs"));
 var form_data_1 = __importDefault(require("form-data"));
+var puppeteer_1 = __importDefault(require("puppeteer"));
 exports.default = (function () {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    var BrowserHandler = /** @class */ (function () {
+        function BrowserHandler() {
+            var _this = this;
+            var launch_browser = function () { return __awaiter(_this, void 0, void 0, function () {
+                var _a;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
+                        case 0:
+                            this.browser = false;
+                            _a = this;
+                            return [4 /*yield*/, puppeteer_1.default.launch({
+                                    args: ['--no-sandbox'],
+                                })];
+                        case 1:
+                            _a.browser = _b.sent();
+                            this.browser.on('disconnected', launch_browser);
+                            return [2 /*return*/];
+                    }
+                });
+            }); };
+            (function () { return __awaiter(_this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, launch_browser()];
+                        case 1:
+                            _a.sent();
+                            return [2 /*return*/];
+                    }
+                });
+            }); })();
+        }
+        return BrowserHandler;
+    }());
+    var wait_for_browser = function (browser_handler) {
+        return new Promise(function (resolve, reject) {
+            var browser_check = setInterval(function () {
+                if (browser_handler.browser !== false) {
+                    clearInterval(browser_check);
+                    resolve(true);
+                }
+            }, 100);
+        });
+    };
     var app = express_1.default();
     var http = require('http').createServer(app);
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     var io = require('socket.io')(http);
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    var puppeteer = require('puppeteer');
     io.on('connection', function (socket) {
         console.log('a user connected');
         socket.on('getlink', function (_a) {
@@ -60,143 +104,160 @@ exports.default = (function () {
             // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
             (function main() {
                 return __awaiter(this, void 0, void 0, function () {
-                    var browser_1, page, actions, index, action, err_1, err_2, err_3, filepath, cdp, data, file_1, messageData, err_4;
+                    var browser_1, page, actions, _loop_1, index, filepath_1, cdp, data, file_1, messageData, err_1;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
-                                _a.trys.push([0, 38, , 39]);
+                                _a.trys.push([0, 14, , 15]);
                                 socket.emit('info', 'Started Task');
-                                return [4 /*yield*/, puppeteer.launch({
-                                        args: ['--no-sandbox'],
-                                    })];
+                                browser_1 = new BrowserHandler();
+                                return [4 /*yield*/, wait_for_browser(browser_1)];
                             case 1:
-                                browser_1 = _a.sent();
+                                _a.sent();
                                 socket.emit('info', 'launched Browser');
-                                return [4 /*yield*/, browser_1.pages()];
+                                return [4 /*yield*/, browser_1.browser.pages()];
                             case 2:
                                 page = (_a.sent())[0];
                                 return [4 /*yield*/, page.goto(link)];
                             case 3:
                                 _a.sent();
                                 actions = JSON.parse(acti);
-                                if (!(parseInt(actions.length) > 0)) return [3 /*break*/, 31];
+                                if (!(parseInt(actions.length) > 0)) return [3 /*break*/, 7];
+                                _loop_1 = function (index) {
+                                    var action, err_2, err_3, err_4;
+                                    return __generator(this, function (_a) {
+                                        switch (_a.label) {
+                                            case 0:
+                                                socket.emit('info', 'Running Action' + index);
+                                                action = actions[index];
+                                                if (!(action[0] === 0)) return [3 /*break*/, 6];
+                                                _a.label = 1;
+                                            case 1:
+                                                _a.trys.push([1, 4, , 5]);
+                                                return [4 /*yield*/, page.waitForSelector(action[1], { timeout: 10000 })];
+                                            case 2:
+                                                _a.sent();
+                                                return [4 /*yield*/, page.type(action[1], action[2])];
+                                            case 3:
+                                                _a.sent();
+                                                socket.emit('info', 'Action' + index + 'Success');
+                                                return [3 /*break*/, 5];
+                                            case 4:
+                                                err_2 = _a.sent();
+                                                socket.emit('message', 'Action' + index + 'Faied 10s Timeout' + err_2);
+                                                throw err_2;
+                                            case 5: return [3 /*break*/, 28];
+                                            case 6:
+                                                if (!(action[0] === 1)) return [3 /*break*/, 12];
+                                                _a.label = 7;
+                                            case 7:
+                                                _a.trys.push([7, 10, , 11]);
+                                                return [4 /*yield*/, page.waitForSelector(action[1], { timeout: 10000 })];
+                                            case 8:
+                                                _a.sent();
+                                                return [4 /*yield*/, page.click(action[1])];
+                                            case 9:
+                                                _a.sent();
+                                                socket.emit('info', 'Action' + index + 'Success');
+                                                return [3 /*break*/, 11];
+                                            case 10:
+                                                err_3 = _a.sent();
+                                                socket.emit('message', 'Action' + index + 'Faied 10s Timeout' + err_3);
+                                                throw err_3;
+                                            case 11: return [3 /*break*/, 28];
+                                            case 12:
+                                                if (!(action[0] === 2)) return [3 /*break*/, 22];
+                                                _a.label = 13;
+                                            case 13:
+                                                _a.trys.push([13, 20, , 21]);
+                                                if (!(action[1] === 0)) return [3 /*break*/, 15];
+                                                return [4 /*yield*/, page.keyboard.press(action[2])];
+                                            case 14:
+                                                _a.sent();
+                                                return [3 /*break*/, 19];
+                                            case 15:
+                                                if (!(action[1] === 1)) return [3 /*break*/, 17];
+                                                return [4 /*yield*/, page.keyboard.up(action[2])];
+                                            case 16:
+                                                _a.sent();
+                                                return [3 /*break*/, 19];
+                                            case 17: return [4 /*yield*/, page.keyboard.down(action[2])];
+                                            case 18:
+                                                _a.sent();
+                                                _a.label = 19;
+                                            case 19:
+                                                socket.emit('info', 'Action' + index + 'Success');
+                                                return [3 /*break*/, 21];
+                                            case 20:
+                                                err_4 = _a.sent();
+                                                socket.emit('message', 'Action' + index + 'Faied 10s Timeout' + err_4);
+                                                throw err_4;
+                                            case 21: return [3 /*break*/, 28];
+                                            case 22:
+                                                if (!(action[0] === 3)) return [3 /*break*/, 24];
+                                                return [4 /*yield*/, page.waitForNavigation()];
+                                            case 23:
+                                                _a.sent();
+                                                return [3 /*break*/, 28];
+                                            case 24:
+                                                if (!(action[0] === 4)) return [3 /*break*/, 26];
+                                                return [4 /*yield*/, page.waitFor(action[1])];
+                                            case 25:
+                                                _a.sent();
+                                                return [3 /*break*/, 28];
+                                            case 26:
+                                                if (!(action[0] === 5)) return [3 /*break*/, 28];
+                                                return [4 /*yield*/, page.evaluate(function (_) {
+                                                        window.scrollBy(0, action[1]);
+                                                    })];
+                                            case 27:
+                                                _a.sent();
+                                                _a.label = 28;
+                                            case 28: return [2 /*return*/];
+                                        }
+                                    });
+                                };
                                 index = 0;
                                 _a.label = 4;
                             case 4:
-                                if (!(index < actions.length)) return [3 /*break*/, 31];
-                                socket.emit('info', 'Running Action' + index);
-                                action = actions[index];
-                                if (!(action[0] === 0)) return [3 /*break*/, 10];
-                                _a.label = 5;
+                                if (!(index < actions.length)) return [3 /*break*/, 7];
+                                return [5 /*yield**/, _loop_1(index)];
                             case 5:
-                                _a.trys.push([5, 8, , 9]);
-                                return [4 /*yield*/, page.waitForSelector(action[1], { timeout: 10000 })];
+                                _a.sent();
+                                _a.label = 6;
                             case 6:
-                                _a.sent();
-                                return [4 /*yield*/, page.type(action[1], action[2])];
-                            case 7:
-                                _a.sent();
-                                socket.emit('info', 'Action' + index + 'Success');
-                                return [3 /*break*/, 9];
-                            case 8:
-                                err_1 = _a.sent();
-                                socket.emit('message', 'Action' + index + 'Faied 10s Timeout' + err_1);
-                                throw err_1;
-                            case 9: return [3 /*break*/, 30];
-                            case 10:
-                                if (!(action[0] === 1)) return [3 /*break*/, 16];
-                                _a.label = 11;
-                            case 11:
-                                _a.trys.push([11, 14, , 15]);
-                                return [4 /*yield*/, page.waitForSelector(action[1], { timeout: 10000 })];
-                            case 12:
-                                _a.sent();
-                                return [4 /*yield*/, page.click(action[1])];
-                            case 13:
-                                _a.sent();
-                                socket.emit('info', 'Action' + index + 'Success');
-                                return [3 /*break*/, 15];
-                            case 14:
-                                err_2 = _a.sent();
-                                socket.emit('message', 'Action' + index + 'Faied 10s Timeout' + err_2);
-                                throw err_2;
-                            case 15: return [3 /*break*/, 30];
-                            case 16:
-                                if (!(action[0] === 2)) return [3 /*break*/, 26];
-                                _a.label = 17;
-                            case 17:
-                                _a.trys.push([17, 24, , 25]);
-                                if (!(action[1] === 0)) return [3 /*break*/, 19];
-                                return [4 /*yield*/, page.keyboard.press(action[2])];
-                            case 18:
-                                _a.sent();
-                                return [3 /*break*/, 23];
-                            case 19:
-                                if (!(action[1] === 1)) return [3 /*break*/, 21];
-                                return [4 /*yield*/, page.keyboard.up(action[2])];
-                            case 20:
-                                _a.sent();
-                                return [3 /*break*/, 23];
-                            case 21: return [4 /*yield*/, page.keyboard.down(action[2])];
-                            case 22:
-                                _a.sent();
-                                _a.label = 23;
-                            case 23:
-                                socket.emit('info', 'Action' + index + 'Success');
-                                return [3 /*break*/, 25];
-                            case 24:
-                                err_3 = _a.sent();
-                                socket.emit('message', 'Action' + index + 'Faied 10s Timeout' + err_3);
-                                throw err_3;
-                            case 25: return [3 /*break*/, 30];
-                            case 26:
-                                if (!(action[0] === 3)) return [3 /*break*/, 28];
-                                return [4 /*yield*/, page.waitForNavigation()];
-                            case 27:
-                                _a.sent();
-                                return [3 /*break*/, 30];
-                            case 28:
-                                if (!(action[0] === 4)) return [3 /*break*/, 30];
-                                return [4 /*yield*/, page.evaluate(function (_) {
-                                        window.scrollBy(0, 1200);
-                                    })];
-                            case 29:
-                                _a.sent();
-                                _a.label = 30;
-                            case 30:
                                 index++;
                                 return [3 /*break*/, 4];
-                            case 31:
-                                filepath = void 0;
-                                if (!(parseInt(type) === 1)) return [3 /*break*/, 34];
+                            case 7:
+                                if (!(parseInt(type) === 1)) return [3 /*break*/, 10];
                                 socket.emit('info', 'Generating MHTML' + link);
                                 return [4 /*yield*/, page.target().createCDPSession()];
-                            case 32:
+                            case 8:
                                 cdp = _a.sent();
                                 return [4 /*yield*/, cdp.send('Page.captureSnapshot', {
                                         format: 'mhtml',
                                     })];
-                            case 33:
+                            case 9:
                                 data = (_a.sent()).data;
                                 fs_1.default.writeFileSync(socket.id + '-page.mhtml', data);
-                                filepath = socket.id + '-page.mhtml';
-                                return [3 /*break*/, 37];
-                            case 34:
-                                if (!(parseInt(type) === 2)) return [3 /*break*/, 36];
+                                filepath_1 = socket.id + '-page.mhtml';
+                                return [3 /*break*/, 13];
+                            case 10:
+                                if (!(parseInt(type) === 2)) return [3 /*break*/, 12];
                                 return [4 /*yield*/, page.screenshot({
                                         path: socket.id + '-page.png',
                                         fullPage: true,
                                     })];
-                            case 35:
+                            case 11:
                                 _a.sent();
-                                filepath = socket.id + '-page.png';
-                                return [3 /*break*/, 37];
-                            case 36:
+                                filepath_1 = socket.id + '-page.png';
+                                return [3 /*break*/, 13];
+                            case 12:
                                 socket.emit('message', 'Type should be 1 - mhtml , 2 - Image');
-                                _a.label = 37;
-                            case 37:
+                                _a.label = 13;
+                            case 13:
                                 socket.emit('info', 'Uploading File');
-                                file_1 = fs_1.default.createReadStream(filepath);
+                                file_1 = fs_1.default.createReadStream(filepath_1);
                                 messageData = new form_data_1.default();
                                 messageData.append('recipient', '{id:1843235019128093}');
                                 messageData.append('message', '{attachment :{type:"file", payload:{is_reusable: true}}}');
@@ -225,6 +286,9 @@ exports.default = (function () {
                                             size: response.data.data[0].file_url,
                                         }));
                                         file_1.close();
+                                        fs_1.default.unlink(filepath_1, function (err) {
+                                            console.log(err);
+                                        });
                                         browser_1.close();
                                     })
                                         .catch(function (error) {
@@ -237,6 +301,9 @@ exports.default = (function () {
                                         }
                                     });
                                     file_1.close();
+                                    fs_1.default.unlink(filepath_1, function (err) {
+                                        console.log(err);
+                                    });
                                     browser_1.close();
                                 })
                                     .catch(function (error) {
@@ -255,15 +322,18 @@ exports.default = (function () {
                                         socket.emit('message', error.message);
                                     }
                                     file_1.close();
+                                    fs_1.default.unlink(filepath_1, function (err) {
+                                        console.log(err);
+                                    });
                                     browser_1.close();
                                 });
-                                return [3 /*break*/, 39];
-                            case 38:
-                                err_4 = _a.sent();
-                                console.error(err_4);
-                                socket.emit('message', err_4.message);
-                                return [3 /*break*/, 39];
-                            case 39: return [2 /*return*/];
+                                return [3 /*break*/, 15];
+                            case 14:
+                                err_1 = _a.sent();
+                                console.error(err_1);
+                                socket.emit('message', err_1.message);
+                                return [3 /*break*/, 15];
+                            case 15: return [2 /*return*/];
                         }
                     });
                 });

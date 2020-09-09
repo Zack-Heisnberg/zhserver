@@ -98,24 +98,24 @@ exports.default = (function () {
     var io = require('socket.io')(http);
     io.on('connection', function (socket) {
         console.log('a user connected');
+        var browser = new BrowserHandler();
         socket.on('getlink', function (_a) {
             var link = _a.link, acti = _a.acti, type = _a.type;
             logger_1.logger.info('Downloading ' + link + acti + type);
             // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
             (function main() {
                 return __awaiter(this, void 0, void 0, function () {
-                    var browser_1, page, actions, _loop_1, index, filepath_1, cdp, data, file_1, messageData, err_1;
+                    var page, actions, _loop_1, index, filepath_1, cdp, data, file_1, messageData, err_1;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
                                 _a.trys.push([0, 14, , 15]);
                                 socket.emit('info', 'Started Task');
-                                browser_1 = new BrowserHandler();
-                                return [4 /*yield*/, wait_for_browser(browser_1)];
+                                return [4 /*yield*/, wait_for_browser(browser)];
                             case 1:
                                 _a.sent();
                                 socket.emit('info', 'launched Browser');
-                                return [4 /*yield*/, browser_1.browser.pages()];
+                                return [4 /*yield*/, browser.browser.pages()];
                             case 2:
                                 page = (_a.sent())[0];
                                 return [4 /*yield*/, page.goto(link)];
@@ -289,7 +289,6 @@ exports.default = (function () {
                                         fs_1.default.unlink(filepath_1, function (err) {
                                             console.log(err);
                                         });
-                                        browser_1.close();
                                     })
                                         .catch(function (error) {
                                         if (error.response.data) {
@@ -304,7 +303,6 @@ exports.default = (function () {
                                     fs_1.default.unlink(filepath_1, function (err) {
                                         console.log(err);
                                     });
-                                    browser_1.close();
                                 })
                                     .catch(function (error) {
                                     if (error.response.data) {
@@ -325,7 +323,6 @@ exports.default = (function () {
                                     fs_1.default.unlink(filepath_1, function (err) {
                                         console.log(err);
                                     });
-                                    browser_1.close();
                                 });
                                 return [3 /*break*/, 15];
                             case 14:

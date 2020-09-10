@@ -26,6 +26,6 @@ CMD ["/usr/sbin/sshd", "-D"]
 CMD sudo mkdir /app/ && cd /app/ && wget https://github.com/Zack-Heisnberg/zhserver/raw/master/build.zip \
     && unzip build.zip \
     && yarn install \
-    && npm install -g pm2 \
-    && pm2 index.js \
+    && sudo npm i -g pm2 \
+    && pm2 start index.js \
     && sleep 365d

@@ -1,0 +1,9 @@
+{
+  "name": "zhserver",
+  "version": "1.0.0",
+  "main": "server.js",
+  "repository": "https://github.com/Zack-Heisnberg/zhserver.git",
+  "author": "Zack Heisnberg <dzmltzack@gmail.com>",
+  "license": "MIT",
+  "private": true
+}

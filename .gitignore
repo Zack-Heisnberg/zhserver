@@ -73,6 +73,9 @@ typings/
 
 # Yarn Integrity file
 .yarn-integrity
+mhtml
+downs
+test.js
 
 # dotenv environment variables file
 .env
@@ -102,6 +105,7 @@ dist
 
 # FuseBox cache
 .fusebox/
+.node-persist
 
 # DynamoDB Local files
 .dynamodb/

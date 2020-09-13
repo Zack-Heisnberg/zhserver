@@ -105,5 +105,9 @@ function boot() {
   });
   const port = config.express.port;
   const host = config.App.host;
-  http.listen(port, () => logger.warn(`${config.App.name} Socket listening at http://${host}:${port}`));
+  try {
+    http.listen(port, () => logger.warn(`${config.App.name} Socket listening at http://${host}:${port}`));
+  } catch (e) {
+    logger.error(e.messsage);
+  }
 }

@@ -67,12 +67,8 @@ exports.getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storag
       } else {
         this.emit(storage, user, socket, 'info', 'Supported by YTDL', false);
         console.log(info);
-        if (info.format === '0 - unknown') {
-          this.emit(storage, user, socket, 'show', { t: 'nos', file: info._filename }, true);
-        } else {
-          this.emit(storage, user, socket, 'show', { t: 's', file: info._filename }, true);
-        }
-        socket.once('respond', data => {
+        this.emit(storage, user, socket, 'show', { file: info._filename }, true);
+        socket.once('response', data => {
           switch (parseInt(data)) {
             case 1:
               // stream
@@ -80,6 +76,7 @@ exports.getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storag
               break;
             case 2:
               // download
+              this.emit(storage, user, socket, 'message', 'download not made yet lel', false);
               //callback(user, 'download');
               break;
             case 3:

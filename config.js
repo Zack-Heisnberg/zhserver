@@ -12,9 +12,7 @@ const envFound = dotenv.config();
 
 if (envFound.error) {
   // This error should crash whole process
-  throw new Error(
-    "⚠️ Couldn't find .env file ⚠️ \n" + JSON.stringify(envFound),
-  );
+  throw new Error("⚠️ Couldn't find .env file ⚠️ \n" + JSON.stringify(envFound));
 }
 // Config Objext
 exports.ENVconfig = {

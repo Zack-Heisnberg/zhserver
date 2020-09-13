@@ -4,17 +4,20 @@ const io = require('socket.io')();
 const Path = require('path');
 const AdmZip = require('adm-zip');
 const rimraf = require('rimraf');
+const progress = require('progress-stream');
+const pb = require('pretty-bytes');
+const ps = require('pretty-ms');
 
 let working = false;
 io.on('connection', function(socket) {
-  socket.on('downlink2', async obj => {
+  socket.once('downlink2', async obj => {
+    let i = 0;
     let int = setInterval(() => {
       check();
     }, 2000);
     function check() {
       if (working) {
         socket.emit('message', 'Waiting to end other task');
-        socket.emit('message', 'Still doing ..');
         return;
       } else {
         socket.emit('message', 'Downloading ..');
@@ -49,14 +52,29 @@ io.on('connection', function(socket) {
             name = Path.resolve(__dirname, 'mhtml', 'page.png');
           }
         }
-        const writer = fs.createWriteStream(name);
-        data.pipe(writer);
-        data.on('data', chunk => {
-          socket.emit('percentage', chunk.length);
-          working = false;
+        const str = progress({
+          length: obj.size,
+          time: 200 /* ms */,
         });
+        str.on('progress', function(prg) {
+          socket.emit('percentage', {
+            localprogpr: parseInt(prg.percentage * 10).toFixed(),
+            localprogprstr: parseInt(prg.percentage).toFixed(2) + '%',
+            localprog: `${pb(prg.transferred)} / ${pb(prg.length)} at ${pb(prg.speed)}/S - Eta: ${ps(
+              prg.runtime * 1000,
+            )} / ${ps(prg.eta * 1000)}  `,
+          });
+        });
+
+        const writer = fs.createWriteStream(name);
+        data.pipe(str).pipe(writer);
+        // data.on('data', chunk => {
+        //   socket.emit('percentage', chunk.length);
+        //   working = false;
+        // });
         data.on('error', error => {
           console.log('downloadError', error);
+          socket.emit('er', error.message);
           working = false;
         });
         data.on('end', () => {
@@ -78,8 +96,15 @@ io.on('connection', function(socket) {
           }
         });
       } catch (er) {
-        socket.emit('er', er.message);
         working = false;
+        socket.emit('er', er.message);
+        if (i < 5) {
+          setTimeout(() => {
+            i++;
+            socket.emit('Retrying..', er.message);
+            download();
+          }, 5000);
+        }
       }
     }
   });

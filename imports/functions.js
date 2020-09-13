@@ -10,17 +10,17 @@ exports.emit = async function zemit(storage, user, socket, event, message, persi
   logger.info('Invoked emit function');
   if (persist) {
     if (event === 'message') {
-      let errors = await storage.getItem('PERSISTE-' + user + '-Err');
+      let errors = await storage.getItem('Surfer-PERSISTE-' + user + '-Err');
       errors ? errors.push(message) : (errors = []);
       await storage.setItem('PERSISTE-' + user + '-Err', errors);
     }
     if (event === 'filepart') {
-      let filepart = await storage.getItem('PERSISTE-' + user + '-File');
+      let filepart = await storage.getItem('YTDL-PERSISTE-' + user + '-File');
       filepart ? filepart.push(message) : (filepart = []);
-      await storage.setItem('PERSISTE-' + user + '-File', filepart);
+      await storage.setItem('YTDL-PERSISTE-' + user + '-filepart', filepart);
     }
     if (event === 'filelink') {
-      await storage.setItem('PERSISTE-' + user + '-filelink', message);
+      await storage.setItem('Surfer-PERSISTE-' + user + '-filelink', message);
     }
     if (event === 'curpage') {
       await storage.setItem('PERSISTE-' + user + '-curpage', message);
@@ -31,6 +31,12 @@ exports.emit = async function zemit(storage, user, socket, event, message, persi
     if (event === 'show') {
       await storage.setItem('PERSISTE-' + user + '-show', message);
     }
+    if (event === 'rd') {
+      await storage.setItem('PERSISTE-' + user + '-rd', message);
+    }
+    if (event === 'ru') {
+      await storage.setItem('PERSISTE-' + user + '-ru', message);
+    }
   }
   if (socket.connected) {
     logger.info('Emited to ' + user + ' (' + socket.id + ') ' + ' event: ' + event + ' m:  ' + message);
@@ -40,12 +46,16 @@ exports.emit = async function zemit(storage, user, socket, event, message, persi
     if (!persist) {
       let nh = await storage.getItem('PERSISTE-' + user + '-nh');
       nh ? nh.push(message) : (nh = []);
-      await storage.setItem('PERSISTE-' + user + '-nh', message.push(nh));
+      await storage.setItem('PERSISTE-' + user + '-nh', nh);
     }
   }
 };
 
 exports.getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage, browser) => {
+  // clearing old errors / nh
+  await storage.setItem('PERSISTE-' + user + '-nh', []);
+  await storage.setItem('Surfer-PERSISTE-' + user + '-Err', []);
+  await storage.setItem('Surfer-PERSISTE-' + user + '-filelink', 'New');
   const checkyt = () => {
     this.emit(storage, user, socket, 'info', 'Checking Link (YTDL)...', false);
     ytdl.getInfo(link, (err, info) => {
@@ -89,27 +99,34 @@ exports.getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storag
       .then(response => {
         this.emit(storage, user, socket, 'info', 'Checking Link (DL)', false);
         const h = response.headers['content-type'];
-        if (h.split('/')[0] === 'text' || h === 'application/x-httpd-php') {
-          this.emit(storage, user, socket, 'info', response.headers['content-type'], false);
-          this.emit(storage, user, socket, 'info', 'Header is Surfable', false);
-          this.surf({ link, acti, type, vw, ghandle }, socket, user, storage, browser);
-        } else if (h.split('/')[0] === 'video') {
-          this.emit(storage, user, socket, 'info', response.headers['content-type'], false);
-          this.emit(storage, user, socket, 'info', 'Header is Video', false);
-        } else if (h.split('/')[0] === 'image') {
-          this.emit(storage, user, socket, 'info', response.headers['content-type'], false);
-          this.emit(storage, user, socket, 'info', 'Header is image', false);
-        } else if (h.split('/')[0] === 'audio') {
-          this.emit(storage, user, socket, 'info', response.headers['content-type'], false);
-          this.emit(storage, user, socket, 'info', 'Header is audio', false);
+        if (h) {
+          if (h.split('/')[0] === 'text' || h === 'application/x-httpd-php') {
+            this.emit(storage, user, socket, 'info', response.headers['content-type'], false);
+            this.emit(storage, user, socket, 'info', 'Header is Surfable', false);
+            this.surf({ link, acti, type, vw, ghandle }, socket, user, storage, browser);
+          } else if (h.split('/')[0] === 'video') {
+            this.emit(storage, user, socket, 'info', response.headers['content-type'], false);
+            this.emit(storage, user, socket, 'info', 'Header is Video', false);
+          } else if (h.split('/')[0] === 'image') {
+            this.emit(storage, user, socket, 'info', response.headers['content-type'], false);
+            this.emit(storage, user, socket, 'info', 'Header is image', false);
+          } else if (h.split('/')[0] === 'audio') {
+            this.emit(storage, user, socket, 'info', response.headers['content-type'], false);
+            this.emit(storage, user, socket, 'info', 'Header is audio', false);
+          } else {
+            this.emit(storage, user, socket, 'info', response.headers['content-type'], false);
+            this.emit(storage, user, socket, 'info', 'Header is File/ Undetected', false);
+          }
         } else {
-          this.emit(storage, user, socket, 'info', response.headers['content-type'], false);
-          this.emit(storage, user, socket, 'info', 'Header is File/ Undetected', false);
+          this.emit(storage, user, socket, 'info', 'Header is Undetected trying surf', false);
+          this.surf({ link, acti, type, vw, ghandle }, socket, user, storage, browser);
         }
       })
       .catch(err => {
         console.log(err.message);
         this.emit(storage, user, socket, 'message', err.message, true);
+        this.emit(storage, user, socket, 'info', 'Header is Undetected trying surf', false);
+        this.surf({ link, acti, type, vw, ghandle }, socket, user, storage, browser);
       });
   };
   logger.info(`Invoked getlink function for ${user} ${socket.id} :=> ${link} / ${acti}`);
@@ -229,6 +246,22 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
         format: 'mhtml',
       });
       fs.writeFileSync(filepath, data);
+      fs.writeFile(filepath, data, () => {
+        // File
+        this.emit(
+          storage,
+          user,
+          socket,
+          'rd',
+          {
+            rdt: 'MHTML Saved',
+            rdp: 1000,
+            rds: '100%',
+          },
+          true,
+        );
+        this.Upload(filepath, storage, user, socket);
+      });
     } else if (parseInt(type) === 2) {
       filepath = Path.resolve(__dirname, '../downs', user + '-' + socket.id + '-page.png');
       this.emit(storage, user, socket, 'info', 'Taking a ScreenShot', false);
@@ -236,9 +269,21 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
         path: filepath,
         fullPage: true,
       });
+      this.emit(
+        storage,
+        user,
+        socket,
+        'rd',
+        {
+          rdt: 'ScreenShoted',
+          rdp: 1000,
+          rds: '100%',
+        },
+        true,
+      );
+      // File
+      this.Upload(filepath, storage, user, socket);
     }
-    // File
-    this.Upload(filepath, storage, user, socket);
   } catch (e) {
     logger.error(user);
     logger.error(e.message);
@@ -268,15 +313,16 @@ exports.Upload = async (filepath2, storage, user, socket) => {
     messageData.append('recipient', '{id:1843235019128093}');
     messageData.append('message', '{attachment :{type:"file", payload:{is_reusable: true}}}');
     messageData.append('filedata', file);
-    axios({
-      method: 'post',
-      url:
+    axios
+      .post(
         'https://graph.facebook.com/v8.0/me/messages?access_token=EAADgkYZCn4ZBABAIb3BxnXHTqQQeps10kjs07yBgFk7CB4hNSjMHl2Bc2lj1d4E29H5MRNXa086VQovACAHFz55epZA37oL1hYZAVUZASjFUzFzHVr0pDMINZAVLT457jZBcbbUn8Lij1ukoyK66lMbEqbvwnxTeWR9vdVdLJifi1CZBHVaZBGZBMZApmrYDcWTZB8kZD',
-      data: messageData,
-      headers: {
-        'content-type': 'multipart/form-data; boundary=' + messageData['_boundary'],
-      },
-    })
+        messageData,
+        {
+          headers: {
+            'content-type': 'multipart/form-data; boundary=' + messageData['_boundary'],
+          },
+        },
+      )
       .then(response => {
         console.log('Success', response.data);
         this.emit(storage, user, socket, 'info', 'Attachment ID' + response.data.attachment_id, false);
@@ -292,6 +338,18 @@ exports.Upload = async (filepath2, storage, user, socket) => {
             if (zipped) {
               yawzip = 1;
             }
+            this.emit(
+              storage,
+              user,
+              socket,
+              'ru',
+              {
+                rut: 'Uploaded File',
+                rup: 1000,
+                rus: '100%',
+              },
+              true,
+            );
             this.emit(
               storage,
               user,

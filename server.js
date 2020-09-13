@@ -4,7 +4,6 @@ const Events = require('./imports/events.js');
 const Functions = require('./imports/functions.js');
 const BrowserHandler = require('./imports/browser.js').bh;
 const express = require('express');
-const puppeteer = require('puppeteer-core');
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
@@ -41,6 +40,31 @@ async function startup() {
         Functions.emit(storage, user, socket, 'Logged In', 'Hello User', false);
         socket.on('getlink', data => {
           Functions.getlink(data, socket, user, storage, browser);
+        });
+        socket.on('important', async data => {
+          logger.info('Invoked important function');
+          if ((await storage.getItem('CURID-' + data.user)) !== socket.id) {
+            Functions.emit(storage, user, socket, 'message', 'UNAUTHORIZED !!!', false);
+            logger.error('UNAUTH' + data.user);
+          } else {
+            const ru = await storage.getItem('PERSISTE-' + data.user + '-ru');
+            Functions.emit(storage, data.user, socket, 'ru', ru, false);
+            const rd = await storage.getItem('PERSISTE-' + data.user + '-rd');
+            Functions.emit(storage, data.user, socket, 'rd', rd, false);
+            const link = await storage.getItem('Surfer-PERSISTE-' + data.user + '-filelink');
+            if (link !== 'New') {
+              Functions.emit(storage, data.user, socket, 'filelink', link, false);
+            } else {
+              let errors = await storage.getItem('Surfer-PERSISTE-' + data.user + '-Err');
+              let nh = await storage.getItem('PERSISTE-' + data.user + '-nh');
+              errors.map(value => {
+                Functions.emit(storage, data.user, socket, 'message', value, false);
+              });
+              nh.map(value => {
+                Functions.emit(storage, data.user, socket, 'info', value, false);
+              });
+            }
+          }
         });
       });
     });

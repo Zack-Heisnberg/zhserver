@@ -497,7 +497,7 @@ exports.m3u8_native = async (storage, user, socket, info, format) => {
   //   console.log(`stderr: ${data}`);
   // });
   const handleinit = () => {
-    counter.user = 0;
+    counter[user] = 0;
     if (fs.existsSync(dirpath + '/init.mp4')) {
       zemit(storage, user, socket, 'info', 'Found Init.mp4', false);
       zemit(storage, user, socket, 'info', 'Sending mime-codec', false);
@@ -597,8 +597,8 @@ async function UploadStream(filepath, storage, user, socket, curdpart, tot) {
             '/attachments/?access_token=EAADgkYZCn4ZBABAIb3BxnXHTqQQeps10kjs07yBgFk7CB4hNSjMHl2Bc2lj1d4E29H5MRNXa086VQovACAHFz55epZA37oL1hYZAVUZASjFUzFzHVr0pDMINZAVLT457jZBcbbUn8Lij1ukoyK66lMbEqbvwnxTeWR9vdVdLJifi1CZBHVaZBGZBMZApmrYDcWTZB8kZD',
         })
           .then(response => {
-            counter.user++;
-            let percentage = counter.user / tot;
+            counter[user] = counter[user] + 1;
+            let percentage = parseInt(counter[user]) / parseInt(tot);
             zemit(
               storage,
               user,

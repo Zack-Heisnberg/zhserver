@@ -496,6 +496,8 @@ exports.m3u8_native = async (storage, user, socket, info, format) => {
   // ls.stderr.on('data', data => {
   //   console.log(`stderr: ${data}`);
   // });
+
+  let curdpart = 1;
   const handleinit = () => {
     counter[user] = 0;
     if (fs.existsSync(dirpath + '/init.mp4')) {
@@ -506,7 +508,7 @@ exports.m3u8_native = async (storage, user, socket, info, format) => {
         console.log(metadata.streams[0]);
       });
       */
-      UploadStream(dirpath + '/init.mp4', storage, user, socket, 'init', tot, 0);
+      UploadStream(dirpath + '/init.mp4', storage, user, socket, 'init', tot);
 
       handlepart();
     } else {
@@ -516,7 +518,6 @@ exports.m3u8_native = async (storage, user, socket, info, format) => {
     }
   };
   handleinit();
-  let curdpart = 1;
   let tot = parseInt(info._duration_raw) / 15;
   zemit(storage, user, socket, 'tot', tot, false);
   const handlepart = () => {
@@ -534,7 +535,7 @@ exports.m3u8_native = async (storage, user, socket, info, format) => {
         },
         true,
       );
-      UploadStream(dirpath + '/output' + curdpart + '.m4s', storage, user, socket, curdpart, tot, percentage);
+      UploadStream(dirpath + '/output' + curdpart + '.m4s', storage, user, socket, curdpart, tot);
       // if (i === 3) {
       //   i = 1;
       //   UploadStream(dirpath + '/output' + curdpart + '.m4s', storage, user, socket, curdpart, tot, percentage);
@@ -548,12 +549,12 @@ exports.m3u8_native = async (storage, user, socket, info, format) => {
       curdpart++;
       setTimeout(() => {
         handlepart();
-      }, 300);
+      }, 2000);
     } else {
       if (curdpart <= tot) {
         setTimeout(() => {
           handlepart();
-        }, 300);
+        }, 2000);
       } else {
         zemit(storage, user, socket, 'info', 'Sending to uploader Done', false);
       }
@@ -597,15 +598,15 @@ async function UploadStream(filepath, storage, user, socket, curdpart, tot) {
             '/attachments/?access_token=EAADgkYZCn4ZBABAIb3BxnXHTqQQeps10kjs07yBgFk7CB4hNSjMHl2Bc2lj1d4E29H5MRNXa086VQovACAHFz55epZA37oL1hYZAVUZASjFUzFzHVr0pDMINZAVLT457jZBcbbUn8Lij1ukoyK66lMbEqbvwnxTeWR9vdVdLJifi1CZBHVaZBGZBMZApmrYDcWTZB8kZD',
         })
           .then(response => {
-            counter[user] = counter[user] + 1;
-            let percentage = parseInt(counter[user]) / parseInt(tot);
+            counter[user]++;
+            let percentage = (parseInt(counter[user]) / parseInt(tot)) * 100;
             zemit(
               storage,
               user,
               socket,
               'ru',
               {
-                rut: `${counter.user} from ${tot}`,
+                rut: `${counter[user]} from ${tot}`,
                 rup: parseInt(percentage * 10).toFixed(),
                 rus: parseInt(percentage).toFixed(2) + '%',
               },

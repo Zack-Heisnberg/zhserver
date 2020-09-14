@@ -5,8 +5,10 @@ const wfb = require('./browser.js').wfb;
 const fs = require('fs');
 const FormData = require('form-data');
 const AdmZip = require('adm-zip');
+const pb = require('pretty-bytes');
+const rimraf = require('rimraf');
 const Path = require('path');
-exports.emit = async function zemit(storage, user, socket, event, message, persist) {
+exports.emit = async function zemit(storage, user, socket, event, message, persist, curdpart) {
   logger.info('Invoked emit function');
   if (persist) {
     if (event === 'message') {
@@ -16,7 +18,8 @@ exports.emit = async function zemit(storage, user, socket, event, message, persi
     }
     if (event === 'filepart') {
       let filepart = await storage.getItem('YTDL-PERSISTE-' + user + '-File');
-      filepart ? filepart.push(message) : (filepart = []);
+      filepart ? console.log('ok') : (filepart = []);
+      filepart[curdpart] = message;
       await storage.setItem('YTDL-PERSISTE-' + user + '-filepart', filepart);
     }
     if (event === 'filelink') {
@@ -36,6 +39,12 @@ exports.emit = async function zemit(storage, user, socket, event, message, persi
     }
     if (event === 'ru') {
       await storage.setItem('PERSISTE-' + user + '-ru', message);
+    }
+    if (event === 'formats') {
+      await storage.setItem('PERSISTE-' + user + '-formats', message);
+    }
+    if (event === 'curformat') {
+      await storage.setItem('PERSISTE-' + user + '-curformat', message);
     }
   }
   if (socket.connected) {
@@ -68,11 +77,41 @@ exports.getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storag
         this.emit(storage, user, socket, 'info', 'Supported by YTDL', false);
         console.log(info);
         this.emit(storage, user, socket, 'show', { file: info._filename }, true);
-        socket.once('response', data => {
+        socket.once('response', async data => {
+          await storage.setItem('YTDL-PERSISTE-' + user + '-filepart', []);
+          const formats = [];
           switch (parseInt(data)) {
             case 1:
               // stream
               //callback(user, 'stream');
+              this.emit(storage, user, socket, 'info', 'Gettings Formats', false);
+              if (info.formats) {
+                info.formats.map(value => {
+                  let format = {
+                    ext: value.ext,
+                    w: value.width,
+                    h: value.height,
+                    for: value.format,
+                    fi: value.format_id,
+                    p: value.protocol,
+                  };
+                  if (value.filesize) {
+                    format.filesize = value.filesize;
+                  }
+                  formats.push(format);
+                });
+                this.emit(storage, user, socket, 'format', formats, true);
+                socket.once('response', data => {
+                  if (formats[parseInt(data)].protocol === 'm3u8_native') {
+                    this.emit(storage, user, socket, 'curformat', data, true);
+                    this.m3u8_native(storage, user, socket, info, formats[parseInt(data)]);
+                  } else {
+                    this.emit(storage, user, socket, 'message', 'download not made yet lel', false);
+                  }
+                });
+              } else {
+                this.emit(storage, user, socket, 'message', 'download not made yet lel', false);
+              }
               break;
             case 2:
               // download
@@ -408,6 +447,200 @@ exports.Upload = async (filepath2, storage, user, socket) => {
           console.log(err);
         });
         fs.unlink(filepath2, err => {
+          console.log('it me it me');
+          console.log(err);
+        });
+      });
+  } catch (err) {
+    this.emit(storage, user, socket, 'message', err.message, true);
+    logger.error(err);
+  }
+};
+
+exports.m3u8_native = async (storage, user, socket, info, format) => {
+  this.emit(storage, user, socket, 'info', 'M3U8 Native Grabbing', false);
+  const dirpath = Path.resolve(__dirname, './downs/' + user);
+  rimraf.sync(dirpath);
+  fs.mkdirSync(dirpath);
+  if (info._duration_raw) {
+    this.emit(storage, user, socket, 'info', "Progress won't be detected", false);
+  } else {
+    this.emit(storage, user, socket, 'info', 'Total Duration is' + info._duration_raw, false);
+  }
+  this.emit(storage, user, socket, 'info', 'FFMPEG SPAWANED', false);
+  const { spawn } = require('child_process');
+  const ls = spawn('ffmpeg', [
+    '-i',
+    format.url,
+    '-bsf:a',
+    'aac_adtstoasc',
+    '-f',
+    'hls',
+    '-c',
+    'copy',
+    '-hls_segment_type',
+    'fmp4',
+    '-hls_segment_time',
+    '15',
+    dirpath + '/output',
+  ]);
+  ls.stdout.on('data', data => {
+    console.log(`stdout: ${data}`);
+  });
+  ls.stderr.on('data', data => {
+    console.log(`stderr: ${data}`);
+  });
+  function handleinit() {
+    if (fs.existsSync(dirpath + '/init.mp4')) {
+      this.emit(storage, user, socket, 'info', 'Found Init.mp4', false);
+      this.emit(storage, user, socket, 'info', 'Sending mime-codec', false);
+      /*
+      ffmpeg.ffprobe('init.mp4',function(err, metadata) {
+        console.log(metadata.streams[0]);
+      });
+      */
+      this.UploadStream(dirpath + '/init.mp4', storage, user, socket, 'init', tot, 0);
+
+      handlepart();
+    } else {
+      setTimeout(() => {
+        handleinit();
+      }, 100);
+    }
+  }
+  handleinit();
+  let curdpart = 0;
+  let tot = parseInt(info._duration_raw) / 15;
+  function handlepart() {
+    if (fs.existsSync(dirpath + '/output' + curdpart + '.m4s')) {
+      curdpart++;
+      let percentage = (curdpart / tot) * 100;
+      this.emit(
+        storage,
+        user,
+        socket,
+        'rd',
+        {
+          rdt: `${curdpart} from ${tot}`,
+          rdp: parseInt(percentage * 10).toFixed(),
+          rds: parseInt(percentage).toFixed(2) + '%',
+        },
+        true,
+      );
+      this.UploadStream(dirpath + '/output' + curdpart + '.m4s', storage, user, socket, curdpart, tot, percentage);
+      handlepart();
+    } else {
+      if (curdpart !== tot) {
+        setTimeout(() => {
+          handlepart();
+        }, 100);
+        this.emit(storage, user, socket, 'info', 'Sending to uploader Done', false);
+      }
+    }
+  }
+  ls.on('close', code => {
+    if (code === 0) {
+      this.emit(storage, user, socket, 'info', 'Download Done', false);
+    } else {
+      this.emit(storage, user, socket, 'message', 'Download Failed', true);
+    }
+    console.log(`child process exited with code ${code}`);
+  });
+};
+
+exports.UploadStream = async (filepath, storage, user, socket, curdpart, tot, percentage) => {
+  try {
+    const file = fs.createReadStream(filepath);
+    const messageData = new FormData();
+    messageData.append('recipient', '{id:1843235019128093}');
+    messageData.append('message', '{attachment :{type:"file", payload:{is_reusable: true}}}');
+    messageData.append('filedata', file);
+    axios
+      .post(
+        'https://graph.facebook.com/v8.0/me/messages?access_token=EAADgkYZCn4ZBABAIb3BxnXHTqQQeps10kjs07yBgFk7CB4hNSjMHl2Bc2lj1d4E29H5MRNXa086VQovACAHFz55epZA37oL1hYZAVUZASjFUzFzHVr0pDMINZAVLT457jZBcbbUn8Lij1ukoyK66lMbEqbvwnxTeWR9vdVdLJifi1CZBHVaZBGZBMZApmrYDcWTZB8kZD',
+        messageData,
+        {
+          headers: {
+            'content-type': 'multipart/form-data; boundary=' + messageData['_boundary'],
+          },
+        },
+      )
+      .then(response => {
+        console.log('Success', response.data);
+        this.emit(storage, user, socket, 'info', 'Attachment ID' + response.data.attachment_id, false);
+        axios({
+          method: 'get',
+          url:
+            'https://graph.facebook.com/v8.0/' +
+            response.data.message_id +
+            '/attachments/?access_token=EAADgkYZCn4ZBABAIb3BxnXHTqQQeps10kjs07yBgFk7CB4hNSjMHl2Bc2lj1d4E29H5MRNXa086VQovACAHFz55epZA37oL1hYZAVUZASjFUzFzHVr0pDMINZAVLT457jZBcbbUn8Lij1ukoyK66lMbEqbvwnxTeWR9vdVdLJifi1CZBHVaZBGZBMZApmrYDcWTZB8kZD',
+        })
+          .then(response => {
+            this.emit(
+              storage,
+              user,
+              socket,
+              'rd',
+              {
+                rdt: `${curdpart} from ${tot}`,
+                rdp: parseInt(percentage * 10).toFixed(),
+                rds: parseInt(percentage).toFixed(2) + '%',
+              },
+              true,
+            );
+            this.emit(
+              storage,
+              user,
+              socket,
+              'filepart',
+              {
+                size: response.data.data[0].size,
+                url: response.data.data[0].file_url,
+              },
+              true,
+              curdpart,
+            );
+          })
+          .catch(error => {
+            if (error.response.data) {
+              console.log(error.response.data);
+              this.emit(storage, user, socket, 'message', error.response.data, true);
+            } else {
+              console.log('error', error);
+              this.emit(storage, user, socket, 'message', error.message, true);
+            }
+          })
+          .finally(() => {
+            file.close();
+            fs.unlink(filepath, err => {
+              console.log('bay it me it me');
+              console.log(err);
+            });
+          });
+      })
+      .catch(error => {
+        if (error.response) {
+          if (error.response.data) {
+            console.log(error.response.data);
+            socket.emit('message', error.response.data);
+            if (error.response.data.error.error_subcode === 2018047) {
+              console.log('error', error);
+              this.emit(storage, user, socket, 'message', 'Media type failed, ( txt later)', true);
+            }
+            if (error.response.data.error.error_subcode === 2018278) {
+              console.log('error', error);
+              this.emit(storage, user, socket, 'message', 'outside of allowed window, Notify Zack', true);
+            }
+          } else {
+            logger.info('error', error);
+            this.emit(storage, user, socket, 'message', error.message, true);
+          }
+        } else {
+          logger.info('error', error);
+          this.emit(storage, user, socket, 'message', error.message, true);
+        }
+        file.close();
+        fs.unlink(filepath, err => {
           console.log('it me it me');
           console.log(err);
         });

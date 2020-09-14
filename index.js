@@ -51,6 +51,10 @@ async function startup() {
             Functions.emit(storage, data.user, socket, 'ru', ru, false);
             const rd = await storage.getItem('PERSISTE-' + data.user + '-rd');
             Functions.emit(storage, data.user, socket, 'rd', rd, false);
+            const filepart = await storage.getItem('Surfer-PERSISTE-' + data.user + '-filepart');
+            filepart.map(value => {
+              Functions.emit(storage, data.user, socket, 'filepart', value, false);
+            });
             const link = await storage.getItem('Surfer-PERSISTE-' + data.user + '-filelink');
             if (link !== 'New') {
               Functions.emit(storage, data.user, socket, 'filelink', link, false);

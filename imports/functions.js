@@ -8,7 +8,9 @@ const AdmZip = require('adm-zip');
 const pb = require('pretty-bytes');
 const rimraf = require('rimraf');
 const Path = require('path');
-exports.emit = async function zemit(storage, user, socket, event, message, persist, curdpart) {
+
+let counter = {};
+const zemit = async function zemit(storage, user, socket, event, message, persist, curdpart) {
   logger.info('Invoked emit function');
   if (persist) {
     if (event === 'message') {
@@ -60,23 +62,23 @@ exports.emit = async function zemit(storage, user, socket, event, message, persi
   }
 };
 
-exports.getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage, browser) => {
+const getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage, browser) => {
   // clearing old errors / nh
   await storage.setItem('PERSISTE-' + user + '-nh', []);
   await storage.setItem('Surfer-PERSISTE-' + user + '-Err', []);
   await storage.setItem('Surfer-PERSISTE-' + user + '-filelink', 'New');
   const checkyt = () => {
-    this.emit(storage, user, socket, 'info', 'Checking Link (YTDL)...', false);
+    zemit(storage, user, socket, 'info', 'Checking Link (YTDL)...', false);
     ytdl.getInfo(link, (err, info) => {
       if (err) {
         console.log(err);
         logger.error(err.message);
-        this.emit(storage, user, socket, 'info', 'Not Supported , checking axios', false);
+        zemit(storage, user, socket, 'info', 'Not Supported , checking axios', false);
         checkax();
       } else {
-        this.emit(storage, user, socket, 'info', 'Supported by YTDL', false);
+        zemit(storage, user, socket, 'info', 'Supported by YTDL', false);
         console.log(info);
-        this.emit(storage, user, socket, 'show', { file: info._filename }, true);
+        zemit(storage, user, socket, 'show', { file: info._filename }, true);
         socket.once('response', async data => {
           await storage.setItem('YTDL-PERSISTE-' + user + '-filepart', []);
           const formats = [];
@@ -84,7 +86,7 @@ exports.getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storag
             case 1:
               // stream
               //callback(user, 'stream');
-              this.emit(storage, user, socket, 'info', 'Gettings Formats', false);
+              zemit(storage, user, socket, 'info', 'Gettings Formats', false);
               if (info.formats) {
                 info.formats.map((value, index) => {
                   let format = {
@@ -101,25 +103,25 @@ exports.getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storag
                   }
                   formats.push(format);
                 });
-                this.emit(storage, user, socket, 'format', info.formats, true);
+                zemit(storage, user, socket, 'format', formats, true);
                 socket.once('response', data => {
                   console.log(formats);
                   console.log(parseInt(data));
                   console.log(info.formats[parseInt(data)]);
                   if (info.formats[parseInt(data)].protocol === 'm3u8_native') {
-                    this.emit(storage, user, socket, 'curformat', data, true);
+                    zemit(storage, user, socket, 'curformat', data, true);
                     this.m3u8_native(storage, user, socket, info, info.formats[parseInt(data)]);
                   } else {
-                    this.emit(storage, user, socket, 'message', 'download not made yet lel', false);
+                    zemit(storage, user, socket, 'message', 'download not made yet lel', false);
                   }
                 });
               } else {
-                this.emit(storage, user, socket, 'message', 'download not made yet lel', false);
+                zemit(storage, user, socket, 'message', 'download not made yet lel', false);
               }
               break;
             case 2:
               // download
-              this.emit(storage, user, socket, 'message', 'download not made yet lel', false);
+              zemit(storage, user, socket, 'message', 'download not made yet lel', false);
               //callback(user, 'download');
               break;
             case 3:
@@ -137,35 +139,35 @@ exports.getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storag
     axios
       .head(link)
       .then(response => {
-        this.emit(storage, user, socket, 'info', 'Checking Link (DL)', false);
+        zemit(storage, user, socket, 'info', 'Checking Link (DL)', false);
         const h = response.headers['content-type'];
         if (h) {
           if (h.split('/')[0] === 'text' || h === 'application/x-httpd-php') {
-            this.emit(storage, user, socket, 'info', response.headers['content-type'], false);
-            this.emit(storage, user, socket, 'info', 'Header is Surfable', false);
+            zemit(storage, user, socket, 'info', response.headers['content-type'], false);
+            zemit(storage, user, socket, 'info', 'Header is Surfable', false);
             this.surf({ link, acti, type, vw, ghandle }, socket, user, storage, browser);
           } else if (h.split('/')[0] === 'video') {
-            this.emit(storage, user, socket, 'info', response.headers['content-type'], false);
-            this.emit(storage, user, socket, 'info', 'Header is Video', false);
+            zemit(storage, user, socket, 'info', response.headers['content-type'], false);
+            zemit(storage, user, socket, 'info', 'Header is Video', false);
           } else if (h.split('/')[0] === 'image') {
-            this.emit(storage, user, socket, 'info', response.headers['content-type'], false);
-            this.emit(storage, user, socket, 'info', 'Header is image', false);
+            zemit(storage, user, socket, 'info', response.headers['content-type'], false);
+            zemit(storage, user, socket, 'info', 'Header is image', false);
           } else if (h.split('/')[0] === 'audio') {
-            this.emit(storage, user, socket, 'info', response.headers['content-type'], false);
-            this.emit(storage, user, socket, 'info', 'Header is audio', false);
+            zemit(storage, user, socket, 'info', response.headers['content-type'], false);
+            zemit(storage, user, socket, 'info', 'Header is audio', false);
           } else {
-            this.emit(storage, user, socket, 'info', response.headers['content-type'], false);
-            this.emit(storage, user, socket, 'info', 'Header is File/ Undetected', false);
+            zemit(storage, user, socket, 'info', response.headers['content-type'], false);
+            zemit(storage, user, socket, 'info', 'Header is File/ Undetected', false);
           }
         } else {
-          this.emit(storage, user, socket, 'info', 'Header is Undetected trying surf', false);
+          zemit(storage, user, socket, 'info', 'Header is Undetected trying surf', false);
           this.surf({ link, acti, type, vw, ghandle }, socket, user, storage, browser);
         }
       })
       .catch(err => {
         console.log(err.message);
-        this.emit(storage, user, socket, 'message', err.message, true);
-        this.emit(storage, user, socket, 'info', 'Header is Undetected trying surf', false);
+        zemit(storage, user, socket, 'message', err.message, true);
+        zemit(storage, user, socket, 'info', 'Header is Undetected trying surf', false);
         this.surf({ link, acti, type, vw, ghandle }, socket, user, storage, browser);
       });
   };
@@ -173,7 +175,7 @@ exports.getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storag
   try {
     JSON.parse(acti);
     if (link === (await storage.getItem('PERSISTE-' + user + '-curpage')) && parseInt(ghandle) === 1) {
-      this.emit(storage, user, socket, 'info', 'Applying Actions to Current Page', false);
+      zemit(storage, user, socket, 'info', 'Applying Actions to Current Page', false);
       this.surf({ link, acti, type, vw, ghandle }, socket, user, storage, browser);
       // surf jsut action
     } else {
@@ -187,7 +189,7 @@ exports.getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storag
   } catch (e) {
     logger.error(user);
     logger.error(e.message);
-    this.emit(storage, user, socket, 'message', e.message, true);
+    zemit(storage, user, socket, 'message', e.message, true);
   }
 };
 
@@ -195,7 +197,7 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
   logger.info(`Invoked surf function for ${user} ${socket.id} :=> ${link} / ${acti}`);
 
   try {
-    this.emit(storage, user, socket, 'info', 'Setting Browser', false);
+    zemit(storage, user, socket, 'info', 'Setting Browser', false);
     await wfb(browser);
     const [page] = await browser.browser.pages();
     const vwp = JSON.parse(vw);
@@ -205,9 +207,9 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
       deviceScaleFactor: parseInt(vwp.d),
     });
     if (parseInt(ghandle) === 1) {
-      this.emit(storage, user, socket, 'info', 'Getting Tab', false);
+      zemit(storage, user, socket, 'info', 'Getting Tab', false);
     } else {
-      this.emit(storage, user, socket, 'info', 'Opening Link', false);
+      zemit(storage, user, socket, 'info', 'Opening Link', false);
       await page.goto(link, { waitUntil: 'networkidle0' });
     }
     // ACTIONS
@@ -215,7 +217,7 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
     if (parseInt(actions.length) > 0) {
       await page.waitFor(1000);
       for (let index = 0; index < actions.length; index++) {
-        this.emit(storage, user, socket, 'info', 'Running Action:' + index, false);
+        zemit(storage, user, socket, 'info', 'Running Action:' + index, false);
         const action = actions[index];
         try {
           if (action[0] === 0) {
@@ -225,12 +227,12 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
                 document.querySelector(action[1]).value = action[2];
               }, action);
             } catch (e) {
-              this.emit(storage, user, socket, 'message', 'Action: ' + index + ' Failed , err => ' + e, false);
+              zemit(storage, user, socket, 'message', 'Action: ' + index + ' Failed , err => ' + e, false);
               try {
                 await page.waitForSelector(action[1], { timeout: 4000 });
                 await page.type(action[1], action[2]);
               } catch (e) {
-                this.emit(storage, user, socket, 'message', 'Action: ' + index + ' Failed , err => ' + e, false);
+                zemit(storage, user, socket, 'message', 'Action: ' + index + ' Failed , err => ' + e, false);
               }
             }
           } else if (action[0] === 1) {
@@ -240,12 +242,12 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
                 document.querySelector(action[1]).click();
               }, action);
             } catch (e) {
-              this.emit(storage, user, socket, 'message', 'Action: ' + index + ' Failed , err => ' + e, false);
+              zemit(storage, user, socket, 'message', 'Action: ' + index + ' Failed , err => ' + e, false);
               try {
                 await page.waitForSelector(action[1], { timeout: 4000 });
                 await page.click(action[1]);
               } catch (e) {
-                this.emit(storage, user, socket, 'message', 'Action: ' + index + ' Failed , err => ' + e, false);
+                zemit(storage, user, socket, 'message', 'Action: ' + index + ' Failed , err => ' + e, false);
               }
             }
           } else if (action[0] === 2) {
@@ -270,7 +272,7 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
             await page.mouse.click(parseInt(action[1]), parseInt(action[2]));
           }
         } catch (err) {
-          this.emit(storage, user, socket, 'message', 'Action: ' + index + ' Failed , err => ' + err, false);
+          zemit(storage, user, socket, 'message', 'Action: ' + index + ' Failed , err => ' + err, false);
         }
       }
       await page.waitFor(1000);
@@ -280,7 +282,7 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
     let filepath = './BADTYPE';
     if (parseInt(type) === 1) {
       filepath = Path.resolve(__dirname, '../downs', user + '-' + socket.id + '-page.mhtml');
-      this.emit(storage, user, socket, 'info', 'capturing MHTML', false);
+      zemit(storage, user, socket, 'info', 'capturing MHTML', false);
       const cdp = await page.target().createCDPSession();
       const { data } = await cdp.send('Page.captureSnapshot', {
         format: 'mhtml',
@@ -288,7 +290,7 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
       fs.writeFileSync(filepath, data);
       fs.writeFile(filepath, data, () => {
         // File
-        this.emit(
+        zemit(
           storage,
           user,
           socket,
@@ -304,12 +306,12 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
       });
     } else if (parseInt(type) === 2) {
       filepath = Path.resolve(__dirname, '../downs', user + '-' + socket.id + '-page.png');
-      this.emit(storage, user, socket, 'info', 'Taking a ScreenShot', false);
+      zemit(storage, user, socket, 'info', 'Taking a ScreenShot', false);
       await page.screenshot({
         path: filepath,
         fullPage: true,
       });
-      this.emit(
+      zemit(
         storage,
         user,
         socket,
@@ -327,13 +329,13 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
   } catch (e) {
     logger.error(user);
     logger.error(e.message);
-    this.emit(storage, user, socket, 'message', e.message, true);
+    zemit(storage, user, socket, 'message', e.message, true);
   }
 };
 
 exports.Upload = async (filepath2, storage, user, socket) => {
   try {
-    this.emit(storage, user, socket, 'info', 'Zipping And Uploading File', false);
+    zemit(storage, user, socket, 'info', 'Zipping And Uploading File', false);
     let zfile = Path.resolve(__dirname, '../zip', user + '-' + socket.id + '-page.txt.000');
     let filepath = filepath2;
     let zipped = false;
@@ -345,7 +347,7 @@ exports.Upload = async (filepath2, storage, user, socket) => {
       zipped = true;
     } catch (e) {
       logger.error(e);
-      this.emit(storage, user, socket, 'message', "Couldn't Zip , uploading directly:" + e.message, true);
+      zemit(storage, user, socket, 'message', "Couldn't Zip , uploading directly:" + e.message, true);
       filepath = filepath2;
     }
     const file = fs.createReadStream(filepath);
@@ -365,7 +367,7 @@ exports.Upload = async (filepath2, storage, user, socket) => {
       )
       .then(response => {
         console.log('Success', response.data);
-        this.emit(storage, user, socket, 'info', 'Attachment ID' + response.data.attachment_id, false);
+        zemit(storage, user, socket, 'info', 'Attachment ID' + response.data.attachment_id, false);
         axios({
           method: 'get',
           url:
@@ -378,7 +380,7 @@ exports.Upload = async (filepath2, storage, user, socket) => {
             if (zipped) {
               yawzip = 1;
             }
-            this.emit(
+            zemit(
               storage,
               user,
               socket,
@@ -390,7 +392,7 @@ exports.Upload = async (filepath2, storage, user, socket) => {
               },
               true,
             );
-            this.emit(
+            zemit(
               storage,
               user,
               socket,
@@ -406,10 +408,10 @@ exports.Upload = async (filepath2, storage, user, socket) => {
           .catch(error => {
             if (error.response.data) {
               console.log(error.response.data);
-              this.emit(storage, user, socket, 'message', error.response.data, true);
+              zemit(storage, user, socket, 'message', error.response.data, true);
             } else {
               console.log('error', error);
-              this.emit(storage, user, socket, 'message', error.message, true);
+              zemit(storage, user, socket, 'message', error.message, true);
             }
           })
           .finally(() => {
@@ -431,19 +433,19 @@ exports.Upload = async (filepath2, storage, user, socket) => {
             socket.emit('message', error.response.data);
             if (error.response.data.error.error_subcode === 2018047) {
               console.log('error', error);
-              this.emit(storage, user, socket, 'message', 'Media type failed, ( txt later)', true);
+              zemit(storage, user, socket, 'message', 'Media type failed, ( txt later)', true);
             }
             if (error.response.data.error.error_subcode === 2018278) {
               console.log('error', error);
-              this.emit(storage, user, socket, 'message', 'outside of allowed window, Notify Zack', true);
+              zemit(storage, user, socket, 'message', 'outside of allowed window, Notify Zack', true);
             }
           } else {
             logger.info('error', error);
-            this.emit(storage, user, socket, 'message', error.message, true);
+            zemit(storage, user, socket, 'message', error.message, true);
           }
         } else {
           logger.info('error', error);
-          this.emit(storage, user, socket, 'message', error.message, true);
+          zemit(storage, user, socket, 'message', error.message, true);
         }
         file.close();
         fs.unlink(filepath, err => {
@@ -456,22 +458,22 @@ exports.Upload = async (filepath2, storage, user, socket) => {
         });
       });
   } catch (err) {
-    this.emit(storage, user, socket, 'message', err.message, true);
+    zemit(storage, user, socket, 'message', err.message, true);
     logger.error(err);
   }
 };
 
 exports.m3u8_native = async (storage, user, socket, info, format) => {
-  this.emit(storage, user, socket, 'info', 'M3U8 Native Grabbing', false);
-  const dirpath = Path.resolve(__dirname, './downs/' + user);
+  zemit(storage, user, socket, 'info', 'M3U8 Native Grabbing', false);
+  const dirpath = Path.resolve(__dirname, '../downs/' + user);
   rimraf.sync(dirpath);
   fs.mkdirSync(dirpath);
   if (info._duration_raw) {
-    this.emit(storage, user, socket, 'info', "Progress won't be detected", false);
+    zemit(storage, user, socket, 'info', "Progress won't be detected", false);
   } else {
-    this.emit(storage, user, socket, 'info', 'Total Duration is' + info._duration_raw, false);
+    zemit(storage, user, socket, 'info', 'Total Duration is' + info._duration_raw, false);
   }
-  this.emit(storage, user, socket, 'info', 'FFMPEG SPAWANED', false);
+  zemit(storage, user, socket, 'info', 'FFMPEG SPAWANED', false);
   const { spawn } = require('child_process');
   const ls = spawn('ffmpeg', [
     '-i',
@@ -484,26 +486,27 @@ exports.m3u8_native = async (storage, user, socket, info, format) => {
     'copy',
     '-hls_segment_type',
     'fmp4',
-    '-hls_segment_time',
+    '-hls_time',
     '15',
     dirpath + '/output',
   ]);
-  ls.stdout.on('data', data => {
-    console.log(`stdout: ${data}`);
-  });
-  ls.stderr.on('data', data => {
-    console.log(`stderr: ${data}`);
-  });
-  function handleinit() {
+  // ls.stdout.on('data', data => {
+  //   console.log(`stdout: ${data}`);
+  // });
+  // ls.stderr.on('data', data => {
+  //   console.log(`stderr: ${data}`);
+  // });
+  const handleinit = () => {
+    counter.user = 0;
     if (fs.existsSync(dirpath + '/init.mp4')) {
-      this.emit(storage, user, socket, 'info', 'Found Init.mp4', false);
-      this.emit(storage, user, socket, 'info', 'Sending mime-codec', false);
+      zemit(storage, user, socket, 'info', 'Found Init.mp4', false);
+      zemit(storage, user, socket, 'info', 'Sending mime-codec', false);
       /*
       ffmpeg.ffprobe('init.mp4',function(err, metadata) {
         console.log(metadata.streams[0]);
       });
       */
-      this.UploadStream(dirpath + '/init.mp4', storage, user, socket, 'init', tot, 0);
+      UploadStream(dirpath + '/init.mp4', storage, user, socket, 'init', tot, 0);
 
       handlepart();
     } else {
@@ -511,15 +514,15 @@ exports.m3u8_native = async (storage, user, socket, info, format) => {
         handleinit();
       }, 100);
     }
-  }
+  };
   handleinit();
-  let curdpart = 0;
+  let curdpart = 1;
   let tot = parseInt(info._duration_raw) / 15;
-  function handlepart() {
+  zemit(storage, user, socket, 'tot', tot, false);
+  const handlepart = () => {
     if (fs.existsSync(dirpath + '/output' + curdpart + '.m4s')) {
-      curdpart++;
       let percentage = (curdpart / tot) * 100;
-      this.emit(
+      zemit(
         storage,
         user,
         socket,
@@ -531,28 +534,42 @@ exports.m3u8_native = async (storage, user, socket, info, format) => {
         },
         true,
       );
-      this.UploadStream(dirpath + '/output' + curdpart + '.m4s', storage, user, socket, curdpart, tot, percentage);
-      handlepart();
+      UploadStream(dirpath + '/output' + curdpart + '.m4s', storage, user, socket, curdpart, tot, percentage);
+      // if (i === 3) {
+      //   i = 1;
+      //   UploadStream(dirpath + '/output' + curdpart + '.m4s', storage, user, socket, curdpart, tot, percentage);
+      // } else if (i === 2) {
+      //   i = 3;
+      //   this.UploadStream2(dirpath + '/output' + curdpart + '.m4s', storage, user, socket, curdpart, tot, percentage);
+      // } else if (i === 1) {
+      //   i = 2;
+      //   this.UploadStream(dirpath + '/output' + curdpart + '.m4s', storage, user, socket, curdpart, tot, percentage);
+      // }
+      curdpart++;
+      setTimeout(() => {
+        handlepart();
+      }, 300);
     } else {
-      if (curdpart !== tot) {
+      if (curdpart <= tot) {
         setTimeout(() => {
           handlepart();
-        }, 100);
-        this.emit(storage, user, socket, 'info', 'Sending to uploader Done', false);
+        }, 300);
+      } else {
+        zemit(storage, user, socket, 'info', 'Sending to uploader Done', false);
       }
     }
-  }
+  };
   ls.on('close', code => {
     if (code === 0) {
-      this.emit(storage, user, socket, 'info', 'Download Done', false);
+      zemit(storage, user, socket, 'info', 'Download Done', false);
     } else {
-      this.emit(storage, user, socket, 'message', 'Download Failed', true);
+      zemit(storage, user, socket, 'message', 'Download Failed', true);
     }
     console.log(`child process exited with code ${code}`);
   });
 };
 
-exports.UploadStream = async (filepath, storage, user, socket, curdpart, tot, percentage) => {
+async function UploadStream(filepath, storage, user, socket, curdpart, tot) {
   try {
     const file = fs.createReadStream(filepath);
     const messageData = new FormData();
@@ -571,7 +588,7 @@ exports.UploadStream = async (filepath, storage, user, socket, curdpart, tot, pe
       )
       .then(response => {
         console.log('Success', response.data);
-        this.emit(storage, user, socket, 'info', 'Attachment ID' + response.data.attachment_id, false);
+        zemit(storage, user, socket, 'info', 'Attachment ID' + response.data.attachment_id, false);
         axios({
           method: 'get',
           url:
@@ -580,46 +597,52 @@ exports.UploadStream = async (filepath, storage, user, socket, curdpart, tot, pe
             '/attachments/?access_token=EAADgkYZCn4ZBABAIb3BxnXHTqQQeps10kjs07yBgFk7CB4hNSjMHl2Bc2lj1d4E29H5MRNXa086VQovACAHFz55epZA37oL1hYZAVUZASjFUzFzHVr0pDMINZAVLT457jZBcbbUn8Lij1ukoyK66lMbEqbvwnxTeWR9vdVdLJifi1CZBHVaZBGZBMZApmrYDcWTZB8kZD',
         })
           .then(response => {
-            this.emit(
+            counter.user++;
+            let percentage = counter.user / tot;
+            zemit(
               storage,
               user,
               socket,
-              'rd',
+              'ru',
               {
-                rdt: `${curdpart} from ${tot}`,
-                rdp: parseInt(percentage * 10).toFixed(),
-                rds: parseInt(percentage).toFixed(2) + '%',
+                rut: `${counter.user} from ${tot}`,
+                rup: parseInt(percentage * 10).toFixed(),
+                rus: parseInt(percentage).toFixed(2) + '%',
               },
               true,
             );
-            this.emit(
+            zemit(
               storage,
               user,
               socket,
               'filepart',
               {
+                id: curdpart,
                 size: response.data.data[0].size,
                 url: response.data.data[0].file_url,
               },
               true,
               curdpart,
             );
-          })
-          .catch(error => {
-            if (error.response.data) {
-              console.log(error.response.data);
-              this.emit(storage, user, socket, 'message', error.response.data, true);
-            } else {
-              console.log('error', error);
-              this.emit(storage, user, socket, 'message', error.message, true);
-            }
-          })
-          .finally(() => {
             file.close();
             fs.unlink(filepath, err => {
               console.log('bay it me it me');
               console.log(err);
             });
+          })
+          .catch(error => {
+            if (error.response.data) {
+              console.log(error.response.data);
+              zemit(storage, user, socket, 'message', error.response.data, true);
+            } else {
+              console.log('error', error);
+              zemit(storage, user, socket, 'message', error.message, true);
+            }
+            setTimeout(() => {
+              if (socket.connected) {
+                UploadStream(filepath, storage, user, socket, curdpart, tot);
+              }
+            }, 2000);
           });
       })
       .catch(error => {
@@ -629,28 +652,34 @@ exports.UploadStream = async (filepath, storage, user, socket, curdpart, tot, pe
             socket.emit('message', error.response.data);
             if (error.response.data.error.error_subcode === 2018047) {
               console.log('error', error);
-              this.emit(storage, user, socket, 'message', 'Media type failed, ( txt later)', true);
+              zemit(storage, user, socket, 'message', 'Media type failed, ( txt later)', true);
             }
             if (error.response.data.error.error_subcode === 2018278) {
               console.log('error', error);
-              this.emit(storage, user, socket, 'message', 'outside of allowed window, Notify Zack', true);
+              zemit(storage, user, socket, 'message', 'outside of allowed window, Notify Zack', true);
             }
           } else {
             logger.info('error', error);
-            this.emit(storage, user, socket, 'message', error.message, true);
+            zemit(storage, user, socket, 'message', error.message, true);
           }
         } else {
           logger.info('error', error);
-          this.emit(storage, user, socket, 'message', error.message, true);
+          zemit(storage, user, socket, 'message', error.message, true);
         }
         file.close();
-        fs.unlink(filepath, err => {
-          console.log('it me it me');
-          console.log(err);
-        });
+
+        setTimeout(() => {
+          if (socket.connected) {
+            UploadStream(filepath, storage, user, socket, curdpart, tot);
+          }
+        }, 2000);
       });
   } catch (err) {
-    this.emit(storage, user, socket, 'message', err.message, true);
+    zemit(storage, user, socket, 'message', err.message, true);
     logger.error(err);
   }
-};
+}
+
+exports.emit = zemit;
+
+exports.getlink = getlink;

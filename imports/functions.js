@@ -86,8 +86,9 @@ exports.getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storag
               //callback(user, 'stream');
               this.emit(storage, user, socket, 'info', 'Gettings Formats', false);
               if (info.formats) {
-                info.formats.map(value => {
+                info.formats.map((value, index) => {
                   let format = {
+                    i: index,
                     ext: value.ext,
                     w: value.width,
                     h: value.height,
@@ -100,11 +101,14 @@ exports.getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storag
                   }
                   formats.push(format);
                 });
-                this.emit(storage, user, socket, 'format', formats, true);
+                this.emit(storage, user, socket, 'format', info.formats, true);
                 socket.once('response', data => {
-                  if (formats[parseInt(data)].protocol === 'm3u8_native') {
+                  console.log(formats);
+                  console.log(parseInt(data));
+                  console.log(info.formats[parseInt(data)]);
+                  if (info.formats[parseInt(data)].protocol === 'm3u8_native') {
                     this.emit(storage, user, socket, 'curformat', data, true);
-                    this.m3u8_native(storage, user, socket, info, formats[parseInt(data)]);
+                    this.m3u8_native(storage, user, socket, info, info.formats[parseInt(data)]);
                   } else {
                     this.emit(storage, user, socket, 'message', 'download not made yet lel', false);
                   }

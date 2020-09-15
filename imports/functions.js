@@ -484,19 +484,19 @@ const downfirst = async (link, storage, user, socket, format) => {
       length: info.size,
       time: 200 /* ms */,
     });
+    str.on('progress', async function(prg) {
+      let prig = {
+        rdp: parseInt(prg.percentage * 10).toFixed(),
+        rds: parseInt(prg.percentage).toFixed(2) + '%',
+        rdt: `${pb(prg.transferred)} / ${pb(prg.length)} at ${pb(prg.speed)}/S - Eta: ${ps(prg.runtime * 1000)} / ${ps(
+          prg.eta * 1000,
+        )}  `,
+      };
+      socket.emit('rd', prig);
+      await storage.setItem('PERSISTE-' + user + '-rd', prig);
+    });
   });
 
-  str.on('progress', async function(prg) {
-    let prig = {
-      rdp: parseInt(prg.percentage * 10).toFixed(),
-      rds: parseInt(prg.percentage).toFixed(2) + '%',
-      rdt: `${pb(prg.transferred)} / ${pb(prg.length)} at ${pb(prg.speed)}/S - Eta: ${ps(prg.runtime * 1000)} / ${ps(
-        prg.eta * 1000,
-      )}  `,
-    };
-    socket.emit('rd', prig);
-    await storage.setItem('PERSISTE-' + user + '-rd', prig);
-  });
   const dirpath = Path.resolve(__dirname, '../downs/' + user + 'tube');
   const filepath = Path.resolve(dirpath, socket.id);
   rimraf.sync(dirpath);

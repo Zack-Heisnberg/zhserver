@@ -470,7 +470,7 @@ const downfirst = async (link, storage, user, socket, format) => {
   const video = ytdl(
     link,
     // Optional arguments passed to youtube-dl.
-    ['--format=' + format.format_id],
+    ['--format=' + format.format_id, '--http-chunk-size=1M'],
     // Additional options can be given for calling `child_process.execFile()`.
     { cwd: __dirname },
   );

@@ -73,16 +73,16 @@ io.on('connection', function(socket) {
         //   working = false;
         // });
         data.on('error', error => {
-          console.log('downloadError', error);
+          // console.log('downloadError', error);
           socket.emit('er', error.message);
           working = false;
         });
         data.on('end', () => {
-          // console.log('end');
+          // // console.log('end');
         });
 
         writer.on('finish', () => {
-          console.log('done');
+          // console.log('done');
           if (zip === 1) {
             const zipfile = new AdmZip(name);
             var zipEntries = zipfile.getEntries(); // an array of ZipEntry records

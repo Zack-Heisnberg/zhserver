@@ -20,7 +20,9 @@ const zemit = async function zemit(storage, user, socket, event, message, persis
     }
     if (event === 'filepart') {
       let filepart = await storage.getItem('YTDL-PERSISTE-' + user + '-File');
-      filepart ? console.log('ok') : (filepart = []);
+      if (!filepart) {
+        filepart = [];
+      }
       filepart[curdpart] = message;
       await storage.setItem('YTDL-PERSISTE-' + user + '-filepart', filepart);
     }
@@ -71,13 +73,13 @@ const getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage,
     zemit(storage, user, socket, 'info', 'Checking Link (YTDL)...', false);
     ytdl.getInfo(link, (err, info) => {
       if (err) {
-        console.log(err);
+        // console.log(err);
         logger.error(err.message);
         zemit(storage, user, socket, 'info', 'Not Supported , checking axios', false);
         checkax();
       } else {
         zemit(storage, user, socket, 'info', 'Supported by YTDL', false);
-        console.log(info);
+        // console.log(info);
         zemit(storage, user, socket, 'show', { file: info._filename }, true);
         socket.once('response', async data => {
           await storage.setItem('YTDL-PERSISTE-' + user + '-filepart', []);
@@ -105,9 +107,9 @@ const getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage,
                 });
                 zemit(storage, user, socket, 'format', formats, true);
                 socket.once('response', data => {
-                  console.log(formats);
-                  console.log(parseInt(data));
-                  console.log(info.formats[parseInt(data)]);
+                  // console.log(formats);
+                  // console.log(parseInt(data));
+                  // console.log(info.formats[parseInt(data)]);
                   if (info.formats[parseInt(data)].protocol === 'm3u8_native') {
                     zemit(storage, user, socket, 'curformat', data, true);
                     this.m3u8_native(storage, user, socket, info, info.formats[parseInt(data)]);
@@ -165,7 +167,7 @@ const getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage,
         }
       })
       .catch(err => {
-        console.log(err.message);
+        // console.log(err.message);
         zemit(storage, user, socket, 'message', err.message, true);
         zemit(storage, user, socket, 'info', 'Header is Undetected trying surf', false);
         this.surf({ link, acti, type, vw, ghandle }, socket, user, storage, browser);
@@ -366,7 +368,7 @@ exports.Upload = async (filepath2, storage, user, socket) => {
         },
       )
       .then(response => {
-        console.log('Success', response.data);
+        // console.log('Success', response.data);
         zemit(storage, user, socket, 'info', 'Attachment ID' + response.data.attachment_id, false);
         axios({
           method: 'get',
@@ -407,36 +409,36 @@ exports.Upload = async (filepath2, storage, user, socket) => {
           })
           .catch(error => {
             if (error.response.data) {
-              console.log(error.response.data);
+              // console.log(error.response.data);
               zemit(storage, user, socket, 'message', error.response.data, true);
             } else {
-              console.log('error', error);
+              // console.log('error', error);
               zemit(storage, user, socket, 'message', error.message, true);
             }
           })
           .finally(() => {
             file.close();
             fs.unlink(filepath, err => {
-              console.log('bay it me it me');
-              console.log(err);
+              // console.log('bay it me it me');
+              // console.log(err);
             });
             fs.unlink(filepath2, err => {
-              console.log('bat it me it me');
-              console.log(err);
+              // console.log('bat it me it me');
+              // console.log(err);
             });
           });
       })
       .catch(error => {
         if (error.response) {
           if (error.response.data) {
-            console.log(error.response.data);
+            // console.log(error.response.data);
             socket.emit('message', error.response.data);
             if (error.response.data.error.error_subcode === 2018047) {
-              console.log('error', error);
+              // console.log('error', error);
               zemit(storage, user, socket, 'message', 'Media type failed, ( txt later)', true);
             }
             if (error.response.data.error.error_subcode === 2018278) {
-              console.log('error', error);
+              // console.log('error', error);
               zemit(storage, user, socket, 'message', 'outside of allowed window, Notify Zack', true);
             }
           } else {
@@ -449,12 +451,12 @@ exports.Upload = async (filepath2, storage, user, socket) => {
         }
         file.close();
         fs.unlink(filepath, err => {
-          console.log('it me it me');
-          console.log(err);
+          // console.log('it me it me');
+          // console.log(err);
         });
         fs.unlink(filepath2, err => {
-          console.log('it me it me');
-          console.log(err);
+          // console.log('it me it me');
+          // console.log(err);
         });
       });
   } catch (err) {
@@ -463,16 +465,22 @@ exports.Upload = async (filepath2, storage, user, socket) => {
   }
 };
 
+let hptime;
+let hptime2;
+let hitime;
+let hitime2;
 exports.m3u8_native = async (storage, user, socket, info, format) => {
+  let curdpart = 0;
+  counter[user] = 0;
+  clearTimeout(hptime);
+  clearTimeout(hptime2);
+  clearTimeout(hitime);
+  clearTimeout(hitime2);
+  let tot = Math.ceil(parseInt(info._duration_raw) / 15) + 1;
   zemit(storage, user, socket, 'info', 'M3U8 Native Grabbing', false);
   const dirpath = Path.resolve(__dirname, '../downs/' + user);
   rimraf.sync(dirpath);
   fs.mkdirSync(dirpath);
-  if (info._duration_raw) {
-    zemit(storage, user, socket, 'info', "Progress won't be detected", false);
-  } else {
-    zemit(storage, user, socket, 'info', 'Total Duration is' + info._duration_raw, false);
-  }
   zemit(storage, user, socket, 'info', 'FFMPEG SPAWANED', false);
   const { spawn } = require('child_process');
   const ls = spawn('ffmpeg', [
@@ -491,45 +499,44 @@ exports.m3u8_native = async (storage, user, socket, info, format) => {
     dirpath + '/output',
   ]);
   // ls.stdout.on('data', data => {
-  //   console.log(`stdout: ${data}`);
+  //   // console.log(`stdout: ${data}`);
   // });
   // ls.stderr.on('data', data => {
-  //   console.log(`stderr: ${data}`);
+  //   // console.log(`stderr: ${data}`);
   // });
-
-  let curdpart = 1;
   const handleinit = () => {
-    counter[user] = 0;
     if (fs.existsSync(dirpath + '/init.mp4')) {
       zemit(storage, user, socket, 'info', 'Found Init.mp4', false);
-      zemit(storage, user, socket, 'info', 'Sending mime-codec', false);
+      // zemit(storage, user, socket, 'info', 'Sending mime-codec', false);
       /*
       ffmpeg.ffprobe('init.mp4',function(err, metadata) {
-        console.log(metadata.streams[0]);
+        // console.log(metadata.streams[0]);
       });
       */
       UploadStream(dirpath + '/init.mp4', storage, user, socket, 'init', tot);
-
-      handlepart();
+      hptime = setTimeout(() => {
+        handlepart();
+      }, 500);
     } else {
-      setTimeout(() => {
+      hitime = setTimeout(() => {
         handleinit();
-      }, 100);
+      }, 500);
     }
   };
-  handleinit();
-  let tot = parseInt(info._duration_raw) / 15;
-  zemit(storage, user, socket, 'tot', tot, false);
+  hitime2 = setTimeout(() => {
+    handleinit();
+  }, 100);
+  zemit(storage, user, socket, 'tot', { tot: tot, dur: parseInt(info._duration_raw) }, false);
   const handlepart = () => {
     if (fs.existsSync(dirpath + '/output' + curdpart + '.m4s')) {
-      let percentage = (curdpart / tot) * 100;
+      let percentage = ((curdpart + 2) / tot) * 100;
       zemit(
         storage,
         user,
         socket,
         'rd',
         {
-          rdt: `${curdpart} from ${tot}`,
+          rdt: `${parseInt(curdpart + 2)} from ${tot}`,
           rdp: parseInt(percentage * 10).toFixed(),
           rds: parseInt(percentage).toFixed(2) + '%',
         },
@@ -547,14 +554,14 @@ exports.m3u8_native = async (storage, user, socket, info, format) => {
       //   this.UploadStream(dirpath + '/output' + curdpart + '.m4s', storage, user, socket, curdpart, tot, percentage);
       // }
       curdpart++;
-      setTimeout(() => {
+      hptime2 = setTimeout(() => {
         handlepart();
-      }, 2000);
+      }, 500);
     } else {
       if (curdpart <= tot) {
-        setTimeout(() => {
+        hptime2 = setTimeout(() => {
           handlepart();
-        }, 2000);
+        }, 500);
       } else {
         zemit(storage, user, socket, 'info', 'Sending to uploader Done', false);
       }
@@ -566,7 +573,7 @@ exports.m3u8_native = async (storage, user, socket, info, format) => {
     } else {
       zemit(storage, user, socket, 'message', 'Download Failed', true);
     }
-    console.log(`child process exited with code ${code}`);
+    // console.log(`child process exited with code ${code}`);
   });
 };
 
@@ -588,8 +595,7 @@ async function UploadStream(filepath, storage, user, socket, curdpart, tot) {
         },
       )
       .then(response => {
-        console.log('Success', response.data);
-        zemit(storage, user, socket, 'info', 'Attachment ID' + response.data.attachment_id, false);
+        // console.log('Success', response.data);
         axios({
           method: 'get',
           url:
@@ -604,39 +610,32 @@ async function UploadStream(filepath, storage, user, socket, curdpart, tot) {
               storage,
               user,
               socket,
-              'ru',
-              {
-                rut: `${counter[user]} from ${tot}`,
-                rup: parseInt(percentage * 10).toFixed(),
-                rus: parseInt(percentage).toFixed(2) + '%',
-              },
-              true,
-            );
-            zemit(
-              storage,
-              user,
-              socket,
               'filepart',
               {
                 id: curdpart,
                 size: response.data.data[0].size,
                 url: response.data.data[0].file_url,
+                ru: JSON.stringify({
+                  rut: `${counter[user]} from ${tot}`,
+                  rup: parseInt(percentage * 10).toFixed(),
+                  rus: parseInt(percentage).toFixed(2) + '%',
+                }),
               },
               true,
               curdpart,
             );
             file.close();
             fs.unlink(filepath, err => {
-              console.log('bay it me it me');
-              console.log(err);
+              // console.log('bay it me it me');
+              // console.log(err);
             });
           })
           .catch(error => {
             if (error.response.data) {
-              console.log(error.response.data);
+              // console.log(error.response.data);
               zemit(storage, user, socket, 'message', error.response.data, true);
             } else {
-              console.log('error', error);
+              // console.log('error', error);
               zemit(storage, user, socket, 'message', error.message, true);
             }
             setTimeout(() => {
@@ -649,14 +648,14 @@ async function UploadStream(filepath, storage, user, socket, curdpart, tot) {
       .catch(error => {
         if (error.response) {
           if (error.response.data) {
-            console.log(error.response.data);
+            // console.log(error.response.data);
             socket.emit('message', error.response.data);
             if (error.response.data.error.error_subcode === 2018047) {
-              console.log('error', error);
+              // console.log('error', error);
               zemit(storage, user, socket, 'message', 'Media type failed, ( txt later)', true);
             }
             if (error.response.data.error.error_subcode === 2018278) {
-              console.log('error', error);
+              // console.log('error', error);
               zemit(storage, user, socket, 'message', 'outside of allowed window, Notify Zack', true);
             }
           } else {

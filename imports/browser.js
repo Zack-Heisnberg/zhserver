@@ -1,12 +1,9 @@
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 exports.bh = class BrowserHandler {
   constructor() {
     const launch_browser = async () => {
       this.browser = false;
       this.browser = await puppeteer.launch({
-        headless: false,
-        executablePath:
-          'C:/Program Files (x86)/Google/Chrome/Application/Chrome.exe',
         args: ['--no-sandbox'],
       });
       this.browser.on('disconnected', launch_browser);

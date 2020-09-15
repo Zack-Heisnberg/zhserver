@@ -15,7 +15,7 @@ const connected = [];
 async function startup() {
   await storage.init(/* options ... */);
   await storage.setItem('USERNAME-zack', 'zakaria123');
-  console.log(await storage.getItem('name'));
+  // console.log(await storage.getItem('name'));
   // lunch one browser
   const browser = new BrowserHandler();
   io.on('connection', socket => {
@@ -25,11 +25,11 @@ async function startup() {
       logger.info('Disconnected' + socket.id);
       for (let i = 0; i < connected.length; i++) {
         if (connected[i] === socket.id) {
-          console.log(connected[i] + ' just disconnected');
+          // console.log(connected[i] + ' just disconnected');
+          global.gc();
           connected.splice(i, 1);
         }
       }
-      socket = { id: socket.id };
     });
     logger.info('Connected' + socket.id);
     // Login In
@@ -51,10 +51,6 @@ async function startup() {
             Functions.emit(storage, data.user, socket, 'ru', ru, false);
             const rd = await storage.getItem('PERSISTE-' + data.user + '-rd');
             Functions.emit(storage, data.user, socket, 'rd', rd, false);
-            const filepart = await storage.getItem('Surfer-PERSISTE-' + data.user + '-filepart');
-            filepart.map(value => {
-              Functions.emit(storage, data.user, socket, 'filepart', value, false);
-            });
             const link = await storage.getItem('Surfer-PERSISTE-' + data.user + '-filelink');
             if (link !== 'New') {
               Functions.emit(storage, data.user, socket, 'filelink', link, false);
@@ -77,7 +73,7 @@ async function startup() {
         logger.info('Disconneting non logged' + socket.id);
         for (let i = 0; i < connected.length; i++) {
           if (connected[i] === socket.id) {
-            console.log(connected[i] + ' just disconnected');
+            // console.log(connected[i] + ' just disconnected');
             connected.splice(i, 1);
           }
         }

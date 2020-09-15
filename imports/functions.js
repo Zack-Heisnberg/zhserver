@@ -467,13 +467,7 @@ exports.Upload = async (filepath2, storage, user, socket) => {
   }
 };
 const downfirst = async (storage, user, socket, info, format) => {
-  const video = ytdl(
-    format.url,
-    // Optional arguments passed to youtube-dl.
-    ['--format=' + format.format_id],
-    // Additional options can be given for calling `child_process.execFile()`.
-    { cwd: __dirname },
-  );
+  const video = ytdl(format.url, { cwd: __dirname });
   // Will be called when the download starts.
   video.on('info', function(info) {
     console.log('Download started');

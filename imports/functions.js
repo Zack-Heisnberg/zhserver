@@ -499,10 +499,11 @@ const downfirst = async (link, storage, user, socket, format) => {
     await storage.setItem('PERSISTE-' + user + '-rd', prig);
   });
   const dirpath = Path.resolve(__dirname, '../downs/' + user + 'tube');
-  const filepath = Path.resolve(dirpath, socket.id);
+  const filepath = Path.resolve(dirpath, user + '.mp4');
   rimraf.sync(dirpath);
   fs.mkdirSync(dirpath);
   video.on('end', function() {
+    console.log(filepath);
     ffmpeg.ffprobe(filepath, function(err, metadata) {
       //console.dir(metadata); // all metadata
       if (err) {

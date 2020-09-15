@@ -14,8 +14,5 @@ exports.logger = winston.createLogger({
     winston.format.json(),
   ),
   defaultMeta: { Application: ENVconfig.App },
-  transports: [
-    new winston.transports.Console({ format: winston.format.simple() }),
-    loggingWinston,
-  ],
+  transports: [new winston.transports.Console({ format: winston.format.simple() }), loggingWinston],
 });

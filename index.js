@@ -38,7 +38,7 @@ async function startup() {
       Events.loginEvent(storage, socket, data, callback => {
         user = callback;
         Functions.emit(storage, user, socket, 'Logged In', 'Hello User', false);
-        socket.on('getlink', data => {
+        socket.once('getlink', data => {
           Functions.getlink(data, socket, user, storage, browser);
         });
         socket.on('important', async data => {
@@ -56,12 +56,8 @@ async function startup() {
               Functions.emit(storage, data.user, socket, 'filelink', link, false);
             } else {
               let errors = await storage.getItem('Surfer-PERSISTE-' + data.user + '-Err');
-              let nh = await storage.getItem('PERSISTE-' + data.user + '-nh');
               errors.map(value => {
                 Functions.emit(storage, data.user, socket, 'message', value, false);
-              });
-              nh.map(value => {
-                Functions.emit(storage, data.user, socket, 'info', value, false);
               });
             }
           }

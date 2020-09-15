@@ -5,9 +5,12 @@ const wfb = require('./browser.js').wfb;
 const fs = require('fs');
 const FormData = require('form-data');
 const AdmZip = require('adm-zip');
+const progress = require('progress-stream');
 const pb = require('pretty-bytes');
+const ps = require('pretty-ms');
 const rimraf = require('rimraf');
 const Path = require('path');
+var ffmpeg = require('fluent-ffmpeg');
 
 let counter = {};
 const zemit = async function zemit(storage, user, socket, event, message, persist, curdpart) {
@@ -19,12 +22,7 @@ const zemit = async function zemit(storage, user, socket, event, message, persis
       await storage.setItem('PERSISTE-' + user + '-Err', errors);
     }
     if (event === 'filepart') {
-      let filepart = await storage.getItem('YTDL-PERSISTE-' + user + '-File');
-      if (!filepart) {
-        filepart = [];
-      }
-      filepart[curdpart] = message;
-      await storage.setItem('YTDL-PERSISTE-' + user + '-filepart', filepart);
+      await storage.setItem('YTDL-PERSISTE-' + user + '-filepart-' + curdpart, message);
     }
     if (event === 'filelink') {
       await storage.setItem('Surfer-PERSISTE-' + user + '-filelink', message);
@@ -55,12 +53,7 @@ const zemit = async function zemit(storage, user, socket, event, message, persis
     logger.info('Emited to ' + user + ' (' + socket.id + ') ' + ' event: ' + event + ' m:  ' + message);
     socket.emit(event, message);
   } else {
-    logger.info('Nothandled Coz Disconnected' + socket.id);
-    if (!persist) {
-      let nh = await storage.getItem('PERSISTE-' + user + '-nh');
-      nh ? nh.push(message) : (nh = []);
-      await storage.setItem('PERSISTE-' + user + '-nh', nh);
-    }
+    logger.info('Nothandled Coz Disconnected' + socket.id + message);
   }
 };
 
@@ -113,6 +106,15 @@ const getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage,
                   if (info.formats[parseInt(data)].protocol === 'm3u8_native') {
                     zemit(storage, user, socket, 'curformat', data, true);
                     this.m3u8_native(storage, user, socket, info, info.formats[parseInt(data)]);
+                  } else if (
+                    info.formats[parseInt(data)].protocol === 'http' ||
+                    info.formats[parseInt(data)].protocol === 'https'
+                  ) {
+                    if (info.formats[parseInt(data)].ext) {
+                      if (info.formats[parseInt(data)].ext === 'mp4') {
+                        downfirst(storage, user, socket, info, info.formats[parseInt(data)]);
+                      }
+                    }
                   } else {
                     zemit(storage, user, socket, 'message', 'download not made yet lel', false);
                   }
@@ -464,12 +466,52 @@ exports.Upload = async (filepath2, storage, user, socket) => {
     logger.error(err);
   }
 };
-
+const downfirst = async (storage, user, socket, info, format) => {
+  const video = ytdl(
+    format.url,
+    // Optional arguments passed to youtube-dl.
+    ['--format=' + format.format_id],
+    // Additional options can be given for calling `child_process.execFile()`.
+    { cwd: __dirname },
+  );
+  // Will be called when the download starts.
+  video.on('info', function(info) {
+    console.log('Download started');
+    console.log('filename: ' + info._filename);
+    console.log('size: ' + info.size);
+  });
+  const str = progress({
+    length: info.size,
+    time: 200 /* ms */,
+  });
+  str.on('progress', function(prg) {
+    socket.emit('rd', {
+      rdp: parseInt(prg.percentage * 10).toFixed(),
+      rds: parseInt(prg.percentage).toFixed(2) + '%',
+      rdt: `${pb(prg.transferred)} / ${pb(prg.length)} at ${pb(prg.speed)}/S - Eta: ${ps(prg.runtime * 1000)} / ${ps(
+        prg.eta * 1000,
+      )}  `,
+    });
+  });
+  const dirpath = Path.resolve(__dirname, '../downs/' + user + 'tube');
+  const filepath = Path.resolve(dirpath, socket.id);
+  rimraf.sync(dirpath);
+  fs.mkdirSync(dirpath);
+  video.on('end', function() {
+    ffmpeg.ffprobe('filepath', function(err, metadata) {
+      //console.dir(metadata); // all metadata
+      let cuttdure = metadata.format.duration;
+      m3u8_native(storage, user, socket, { _duration_raw: cuttdure }, { url: filepath });
+    });
+  });
+  video.pipe(str).pipe(fs.createWriteStream(filepath));
+};
 let hptime;
 let hptime2;
 let hitime;
 let hitime2;
-exports.m3u8_native = async (storage, user, socket, info, format) => {
+exports.m3u8_native = m3u8_native;
+const m3u8_native = async (storage, user, socket, info, format) => {
   let curdpart = 0;
   counter[user] = 0;
   clearTimeout(hptime);
@@ -498,12 +540,6 @@ exports.m3u8_native = async (storage, user, socket, info, format) => {
     '15',
     dirpath + '/output',
   ]);
-  // ls.stdout.on('data', data => {
-  //   // console.log(`stdout: ${data}`);
-  // });
-  // ls.stderr.on('data', data => {
-  //   // console.log(`stderr: ${data}`);
-  // });
   const handleinit = () => {
     if (fs.existsSync(dirpath + '/init.mp4')) {
       zemit(storage, user, socket, 'info', 'Found Init.mp4', false);
@@ -543,16 +579,6 @@ exports.m3u8_native = async (storage, user, socket, info, format) => {
         true,
       );
       UploadStream(dirpath + '/output' + curdpart + '.m4s', storage, user, socket, curdpart, tot);
-      // if (i === 3) {
-      //   i = 1;
-      //   UploadStream(dirpath + '/output' + curdpart + '.m4s', storage, user, socket, curdpart, tot, percentage);
-      // } else if (i === 2) {
-      //   i = 3;
-      //   this.UploadStream2(dirpath + '/output' + curdpart + '.m4s', storage, user, socket, curdpart, tot, percentage);
-      // } else if (i === 1) {
-      //   i = 2;
-      //   this.UploadStream(dirpath + '/output' + curdpart + '.m4s', storage, user, socket, curdpart, tot, percentage);
-      // }
       curdpart++;
       hptime2 = setTimeout(() => {
         handlepart();

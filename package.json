@@ -28,6 +28,7 @@
     "rimraf": "^3.0.2",
     "socket.io": "^2.3.0",
     "winston": "^3.3.3",
+    "fluent-ffmpeg": "^2.1.2",
     "youtube-dl": "^3.0.2"
   }
 }

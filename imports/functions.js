@@ -112,7 +112,7 @@ const getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage,
                   ) {
                     if (info.formats[parseInt(data)].ext) {
                       if (info.formats[parseInt(data)].ext === 'mp4') {
-                        downfirst(storage, user, socket, info, info.formats[parseInt(data)]);
+                        downfirst(link, storage, user, socket, info.formats[parseInt(data)]);
                       }
                     }
                   } else {
@@ -466,18 +466,26 @@ exports.Upload = async (filepath2, storage, user, socket) => {
     logger.error(err);
   }
 };
-const downfirst = async (storage, user, socket, info, format) => {
-  const video = ytdl(format.url, { cwd: __dirname });
+const downfirst = async (link, storage, user, socket, format) => {
+  const video = ytdl(
+    link,
+    // Optional arguments passed to youtube-dl.
+    ['--format=' + format.format_id],
+    // Additional options can be given for calling `child_process.execFile()`.
+    { cwd: __dirname },
+  );
   // Will be called when the download starts.
+  let str;
   video.on('info', function(info) {
     console.log('Download started');
     console.log('filename: ' + info._filename);
     console.log('size: ' + info.size);
+    str = progress({
+      length: info.size,
+      time: 200 /* ms */,
+    });
   });
-  const str = progress({
-    length: info.size,
-    time: 200 /* ms */,
-  });
+
   str.on('progress', async function(prg) {
     let prig = {
       rdp: parseInt(prg.percentage * 10).toFixed(),

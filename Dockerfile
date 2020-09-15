@@ -27,5 +27,5 @@ CMD sudo mkdir /app/ && cd /app/ && wget https://github.com/Zack-Heisnberg/zhser
     && unzip build.zip \
     && yarn install \
     && sudo npm i -g pm2 \
-    && pm2 start index.js \
+    && pm2 start index.js --node-args='--expose-gc' \
     && pm2 logs

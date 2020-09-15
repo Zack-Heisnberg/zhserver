@@ -475,28 +475,29 @@ const downfirst = async (link, storage, user, socket, format) => {
     { cwd: __dirname },
   );
   // Will be called when the download starts.
-  let str;
+
+  const str = progress({
+    length: 1024 * 1024,
+    time: 200 /* ms */,
+  });
   video.on('info', function(info) {
     console.log('Download started');
     console.log('filename: ' + info._filename);
     console.log('size: ' + info.size);
-    str = progress({
-      length: info.size,
-      time: 200 /* ms */,
-    });
-    str.on('progress', async function(prg) {
-      let prig = {
-        rdp: parseInt(prg.percentage * 10).toFixed(),
-        rds: parseInt(prg.percentage).toFixed(2) + '%',
-        rdt: `${pb(prg.transferred)} / ${pb(prg.length)} at ${pb(prg.speed)}/S - Eta: ${ps(prg.runtime * 1000)} / ${ps(
-          prg.eta * 1000,
-        )}  `,
-      };
-      socket.emit('rd', prig);
-      await storage.setItem('PERSISTE-' + user + '-rd', prig);
-    });
+    str.setLength(info.size);
   });
 
+  str.on('progress', async function(prg) {
+    let prig = {
+      rdp: parseInt(prg.percentage * 10).toFixed(),
+      rds: parseInt(prg.percentage).toFixed(2) + '%',
+      rdt: `${pb(prg.transferred)} / ${pb(prg.length)} at ${pb(prg.speed)}/S - Eta: ${ps(prg.runtime * 1000)} / ${ps(
+        prg.eta * 1000,
+      )}  `,
+    };
+    socket.emit('rd', prig);
+    await storage.setItem('PERSISTE-' + user + '-rd', prig);
+  });
   const dirpath = Path.resolve(__dirname, '../downs/' + user + 'tube');
   const filepath = Path.resolve(dirpath, socket.id);
   rimraf.sync(dirpath);

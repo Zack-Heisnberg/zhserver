@@ -10,7 +10,7 @@ const pb = require('pretty-bytes');
 const ps = require('pretty-ms');
 const rimraf = require('rimraf');
 const Path = require('path');
-var ffmpeg = require('fluent-ffmpeg');
+const ffmpeg = require('fluent-ffmpeg');
 
 let counter = {};
 const zemit = async function zemit(storage, user, socket, event, message, persist, curdpart) {
@@ -484,14 +484,16 @@ const downfirst = async (storage, user, socket, info, format) => {
     length: info.size,
     time: 200 /* ms */,
   });
-  str.on('progress', function(prg) {
-    socket.emit('rd', {
+  str.on('progress', async function(prg) {
+    let prig = {
       rdp: parseInt(prg.percentage * 10).toFixed(),
       rds: parseInt(prg.percentage).toFixed(2) + '%',
       rdt: `${pb(prg.transferred)} / ${pb(prg.length)} at ${pb(prg.speed)}/S - Eta: ${ps(prg.runtime * 1000)} / ${ps(
         prg.eta * 1000,
       )}  `,
-    });
+    };
+    socket.emit('rd', prig);
+    await storage.setItem('PERSISTE-' + user + '-rd', prig);
   });
   const dirpath = Path.resolve(__dirname, '../downs/' + user + 'tube');
   const filepath = Path.resolve(dirpath, socket.id);
@@ -500,6 +502,10 @@ const downfirst = async (storage, user, socket, info, format) => {
   video.on('end', function() {
     ffmpeg.ffprobe('filepath', function(err, metadata) {
       //console.dir(metadata); // all metadata
+      if (err) {
+        zemit(storage, user, socket, 'message', err.message, false);
+        return;
+      }
       let cuttdure = metadata.format.duration;
       m3u8_native(storage, user, socket, { _duration_raw: cuttdure }, { url: filepath });
     });
@@ -641,6 +647,7 @@ async function UploadStream(filepath, storage, user, socket, curdpart, tot) {
                 id: curdpart,
                 size: response.data.data[0].size,
                 url: response.data.data[0].file_url,
+                uploaded: counter[user],
                 ru: JSON.stringify({
                   rut: `${counter[user]} from ${tot}`,
                   rup: parseInt(percentage * 10).toFixed(),

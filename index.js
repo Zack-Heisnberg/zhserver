@@ -41,6 +41,10 @@ async function startup() {
         socket.once('getlink', data => {
           Functions.getlink(data, socket, user, storage, browser);
         });
+        socket.on('getplink', async data => {
+          let datagot = await storage.getItem('YTDL-PERSISTE-' + user + '-filepart-' + data);
+          socket.emit('response', datagot);
+        });
         socket.on('important', async data => {
           logger.info('Invoked important function');
           if ((await storage.getItem('CURID-' + data.user)) !== socket.id) {

@@ -105,7 +105,7 @@ const getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage,
                   // console.log(info.formats[parseInt(data)]);
                   if (info.formats[parseInt(data)].protocol === 'm3u8_native') {
                     zemit(storage, user, socket, 'curformat', data, true);
-                    this.m3u8_native(storage, user, socket, info, info.formats[parseInt(data)]);
+                    m3u8_native(storage, user, socket, info, info.formats[parseInt(data)]);
                   } else if (
                     info.formats[parseInt(data)].protocol === 'http' ||
                     info.formats[parseInt(data)].protocol === 'https'
@@ -516,7 +516,6 @@ let hptime;
 let hptime2;
 let hitime;
 let hitime2;
-exports.m3u8_native = m3u8_native;
 const m3u8_native = async (storage, user, socket, info, format) => {
   let curdpart = 0;
   counter[user] = 0;
@@ -716,3 +715,5 @@ async function UploadStream(filepath, storage, user, socket, curdpart, tot) {
 exports.emit = zemit;
 
 exports.getlink = getlink;
+
+exports.m3u8_native = m3u8_native;

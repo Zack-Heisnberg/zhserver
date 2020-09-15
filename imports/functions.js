@@ -105,7 +105,7 @@ const getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage,
                   // console.log(info.formats[parseInt(data)]);
                   if (info.formats[parseInt(data)].protocol === 'm3u8_native') {
                     zemit(storage, user, socket, 'curformat', data, true);
-                    m3u8_native(storage, user, socket, info, info.formats[parseInt(data)]);
+                    m3u8_native(storage, user, socket, info._duration_raw, info.formats[parseInt(data)].url);
                   } else if (
                     info.formats[parseInt(data)].protocol === 'http' ||
                     info.formats[parseInt(data)].protocol === 'https'
@@ -503,14 +503,14 @@ const downfirst = async (link, storage, user, socket, format) => {
   rimraf.sync(dirpath);
   fs.mkdirSync(dirpath);
   video.on('end', function() {
-    ffmpeg.ffprobe('filepath', function(err, metadata) {
+    ffmpeg.ffprobe(filepath, function(err, metadata) {
       //console.dir(metadata); // all metadata
       if (err) {
         zemit(storage, user, socket, 'message', err.message, false);
         return;
       }
       let cuttdure = metadata.format.duration;
-      m3u8_native(storage, user, socket, { _duration_raw: cuttdure }, { url: filepath });
+      m3u8_native(storage, user, socket, cuttdure, filepath);
     });
   });
   video.pipe(str).pipe(fs.createWriteStream(filepath));
@@ -519,14 +519,16 @@ let hptime;
 let hptime2;
 let hitime;
 let hitime2;
-const m3u8_native = async (storage, user, socket, info, format) => {
+const m3u8_native = async (storage, user, socket, duration, input) => {
+  console.log(input);
+  console.log(duration);
   let curdpart = 0;
   counter[user] = 0;
   clearTimeout(hptime);
   clearTimeout(hptime2);
   clearTimeout(hitime);
   clearTimeout(hitime2);
-  let tot = Math.ceil(parseInt(info._duration_raw) / 15) + 1;
+  let tot = Math.ceil(parseInt(duration) / 15) + 1;
   zemit(storage, user, socket, 'info', 'M3U8 Native Grabbing', false);
   const dirpath = Path.resolve(__dirname, '../downs/' + user);
   rimraf.sync(dirpath);
@@ -535,7 +537,7 @@ const m3u8_native = async (storage, user, socket, info, format) => {
   const { spawn } = require('child_process');
   const ls = spawn('ffmpeg', [
     '-i',
-    format.url,
+    input,
     '-bsf:a',
     'aac_adtstoasc',
     '-f',
@@ -570,7 +572,7 @@ const m3u8_native = async (storage, user, socket, info, format) => {
   hitime2 = setTimeout(() => {
     handleinit();
   }, 100);
-  zemit(storage, user, socket, 'tot', { tot: tot, dur: parseInt(info._duration_raw) }, false);
+  zemit(storage, user, socket, 'tot', { tot: tot, dur: parseInt(duration) }, false);
   const handlepart = () => {
     if (fs.existsSync(dirpath + '/output' + curdpart + '.m4s')) {
       let percentage = ((curdpart + 2) / tot) * 100;

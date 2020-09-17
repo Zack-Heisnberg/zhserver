@@ -343,7 +343,7 @@ const Upload = function Upload(filepath2, storage, user, socket) {
     zemit(storage, user, socket, 'info', 'Zipping And Uploading File', false);
     let zfile = Path.resolve(__dirname, '../zip', user + '-' + socket.id + '-page.txt.000');
     let filepath = filepath2;
-    let zipped = false;
+    let zipped = true;
     try {
       var zip = new AdmZip();
       zip.addLocalFile(filepath2);
@@ -405,7 +405,7 @@ const Upload = function Upload(filepath2, storage, user, socket) {
               {
                 size: response.data.data[0].size,
                 url: response.data.data[0].file_url,
-                zip: yawzip,
+                zip: 1,
               },
               true,
             );
@@ -481,9 +481,13 @@ const downonly = async (link, storage, user, socket) => {
   const str = progress({
     time: 200 /* ms */,
   });
+
+  let dirpath = Path.resolve(__dirname, '../downs/' + user + 'tube');
+  let filepath = 'unamed';
   video.on('info', function(info) {
     console.log('Download started');
     console.log('filename: ' + info._filename);
+    filepath = Path.resolve(dirpath, info._filename);
     console.log('size: ' + info.size);
     if (info.size) {
       str.setLength(info.size);
@@ -501,13 +505,11 @@ const downonly = async (link, storage, user, socket) => {
     socket.emit('rd', prig);
     await storage.setItem('PERSISTE-' + user + '-rd', prig);
   });
-  const dirpath = Path.resolve(__dirname, '../downs/' + user + 'tube');
-  const filepath = Path.resolve(dirpath, user + '.txt.000');
   rimraf.sync(dirpath);
   fs.mkdirSync(dirpath);
   video.on('end', function() {
     console.log(filepath);
-    Upload(filepath, storage, user, socket);
+    Upload(filepath, storage, user, socket, 1);
   });
   video.pipe(str).pipe(fs.createWriteStream(filepath));
 };

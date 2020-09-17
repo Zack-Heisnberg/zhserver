@@ -38,7 +38,7 @@ async function startup() {
       Events.loginEvent(storage, socket, data, callback => {
         user = callback;
         Functions.emit(storage, user, socket, 'Logged In', 'Hello User', false);
-        socket.once('getlink', data => {
+        socket.on('getlink', data => {
           Functions.getlink(data, socket, user, storage, browser);
         });
         socket.on('getplink', async data => {

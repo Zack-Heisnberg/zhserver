@@ -338,7 +338,7 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
   }
 };
 
-exports.Upload = async (filepath2, storage, user, socket) => {
+exports.Upload = async function upload(filepath2, storage, user, socket) {
   try {
     zemit(storage, user, socket, 'info', 'Zipping And Uploading File', false);
     let zfile = Path.resolve(__dirname, '../zip', user + '-' + socket.id + '-page.txt.000');
@@ -506,7 +506,7 @@ const downonly = async (link, storage, user, socket) => {
   fs.mkdirSync(dirpath);
   video.on('end', function() {
     console.log(filepath);
-    this.Upload(filepath, storage, user, socket);
+    Upload(filepath, storage, user, socket);
   });
   video.pipe(str).pipe(fs.createWriteStream(filepath));
 };

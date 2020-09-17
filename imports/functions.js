@@ -485,7 +485,9 @@ const downonly = async (link, storage, user, socket) => {
     console.log('Download started');
     console.log('filename: ' + info._filename);
     console.log('size: ' + info.size);
-    str.setLength(info.size);
+    if (info.size) {
+      str.setLength(info.size);
+    }
   });
 
   str.on('progress', async function(prg) {

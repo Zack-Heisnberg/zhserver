@@ -307,7 +307,7 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
           },
           true,
         );
-        this.Upload(filepath, storage, user, socket);
+        Upload(filepath, storage, user, socket);
       });
     } else if (parseInt(type) === 2) {
       filepath = Path.resolve(__dirname, '../downs', user + '-' + socket.id + '-page.png');
@@ -329,7 +329,7 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
         true,
       );
       // File
-      this.Upload(filepath, storage, user, socket);
+      Upload(filepath, storage, user, socket);
     }
   } catch (e) {
     logger.error(user);
@@ -338,7 +338,7 @@ exports.surf = async function({ link, acti, type, vw, ghandle }, socket, user, s
   }
 };
 
-exports.Upload = async function upload(filepath2, storage, user, socket) {
+const Upload = function Upload(filepath2, storage, user, socket) {
   try {
     zemit(storage, user, socket, 'info', 'Zipping And Uploading File', false);
     let zfile = Path.resolve(__dirname, '../zip', user + '-' + socket.id + '-page.txt.000');
@@ -479,7 +479,6 @@ const downonly = async (link, storage, user, socket) => {
   // Will be called when the download starts.
 
   const str = progress({
-    length: 1024 * 1024,
     time: 200 /* ms */,
   });
   video.on('info', function(info) {

@@ -126,6 +126,7 @@ const getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage,
             case 2:
               // download
               zemit(storage, user, socket, 'message', 'download not made yet lel', false);
+              downonly(link, storage, user, socket, info.formats[parseInt(data)]);
               //callback(user, 'download');
               break;
             case 3:
@@ -465,6 +466,48 @@ exports.Upload = async (filepath2, storage, user, socket) => {
     zemit(storage, user, socket, 'message', err.message, true);
     logger.error(err);
   }
+};
+const downonly = async (link, storage, user, socket, format) => {
+  const video = ytdl(
+    link,
+    // Optional arguments passed to youtube-dl.
+    ['--format=' + format.format_id, '--http-chunk-size=1M'],
+    // Additional options can be given for calling `child_process.execFile()`.
+    { cwd: __dirname },
+  );
+  // Will be called when the download starts.
+
+  const str = progress({
+    length: 1024 * 1024,
+    time: 200 /* ms */,
+  });
+  video.on('info', function(info) {
+    console.log('Download started');
+    console.log('filename: ' + info._filename);
+    console.log('size: ' + info.size);
+    str.setLength(info.size);
+  });
+
+  str.on('progress', async function(prg) {
+    let prig = {
+      rdp: parseInt(prg.percentage * 10).toFixed(),
+      rds: parseInt(prg.percentage).toFixed(2) + '%',
+      rdt: `${pb(prg.transferred)} / ${pb(prg.length)} at ${pb(prg.speed)}/S - Eta: ${ps(prg.runtime * 1000)} / ${ps(
+        prg.eta * 1000,
+      )}  `,
+    };
+    socket.emit('rd', prig);
+    await storage.setItem('PERSISTE-' + user + '-rd', prig);
+  });
+  const dirpath = Path.resolve(__dirname, '../downs/' + user + 'tube');
+  const filepath = Path.resolve(dirpath, user + '.txt.000');
+  rimraf.sync(dirpath);
+  fs.mkdirSync(dirpath);
+  video.on('end', function() {
+    console.log(filepath);
+    this.Upload(filepath, storage, user, socket);
+  });
+  video.pipe(str).pipe(fs.createWriteStream(filepath));
 };
 const downfirst = async (link, storage, user, socket, format) => {
   const video = ytdl(

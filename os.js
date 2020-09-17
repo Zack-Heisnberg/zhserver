@@ -56,6 +56,7 @@ io.on('connection', function(socket) {
           length: obj.size,
           time: 200 /* ms */,
         });
+        const writer = fs.createWriteStream(name);
         str.on('progress', function(prg) {
           socket.emit('percentage', {
             localprogpr: parseInt(prg.percentage * 10).toFixed(),
@@ -66,12 +67,7 @@ io.on('connection', function(socket) {
           });
         });
 
-        const writer = fs.createWriteStream(name);
         data.pipe(str).pipe(writer);
-        // data.on('data', chunk => {
-        //   socket.emit('percentage', chunk.length);
-        //   working = false;
-        // });
         data.on('error', error => {
           // console.log('downloadError', error);
           socket.emit('er', error.message);

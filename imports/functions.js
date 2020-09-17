@@ -117,6 +117,8 @@ const getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage,
                     }
                   } else {
                     zemit(storage, user, socket, 'message', 'download not made yet lel', false);
+
+                    downonly(link, storage, user, socket, info.formats[parseInt(data)]);
                   }
                 });
               } else {
@@ -126,7 +128,6 @@ const getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage,
             case 2:
               // download
               zemit(storage, user, socket, 'message', 'download not made yet lel', false);
-              downonly(link, storage, user, socket, info.formats[parseInt(data)]);
               //callback(user, 'download');
               break;
             case 3:

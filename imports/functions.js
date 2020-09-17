@@ -125,7 +125,7 @@ const getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage,
               break;
             case 2:
               // download
-              zemit(storage, user, socket, 'message', 'download not made yet lel', false);
+              zemit(info._filename, storage, user, socket, 'message', 'download not made yet lel', false);
               downonly(link, storage, user, socket);
               //callback(user, 'download');
               break;
@@ -467,7 +467,7 @@ const Upload = function Upload(filepath2, storage, user, socket) {
     logger.error(err);
   }
 };
-const downonly = async (link, storage, user, socket) => {
+const downonly = async (filename, link, storage, user, socket) => {
   socket.emit('down start');
   const video = ytdl(
     link,
@@ -482,12 +482,11 @@ const downonly = async (link, storage, user, socket) => {
     time: 200 /* ms */,
   });
 
-  let dirpath = Path.resolve(__dirname, '../downs/' + user + 'tube');
-  let filepath = 'unamed';
+  const dirpath = Path.resolve(__dirname, '../downs/' + user + 'tube');
+  const filepath = Path.resolve(dirpath, filename);
   video.on('info', function(info) {
     console.log('Download started');
     console.log('filename: ' + info._filename);
-    filepath = Path.resolve(dirpath, info._filename);
     console.log('size: ' + info.size);
     if (info.size) {
       str.setLength(info.size);

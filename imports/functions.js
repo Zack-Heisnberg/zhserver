@@ -117,8 +117,6 @@ const getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage,
                     }
                   } else {
                     zemit(storage, user, socket, 'message', 'download not made yet lel', false);
-
-                    downonly(link, storage, user, socket, info.formats[parseInt(data)]);
                   }
                 });
               } else {
@@ -128,6 +126,7 @@ const getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage,
             case 2:
               // download
               zemit(storage, user, socket, 'message', 'download not made yet lel', false);
+              downonly(link, storage, user, socket);
               //callback(user, 'download');
               break;
             case 3:
@@ -468,11 +467,12 @@ exports.Upload = async (filepath2, storage, user, socket) => {
     logger.error(err);
   }
 };
-const downonly = async (link, storage, user, socket, format) => {
+const downonly = async (link, storage, user, socket) => {
+  socket.emit('down start');
   const video = ytdl(
     link,
     // Optional arguments passed to youtube-dl.
-    ['--format=' + format.format_id, '--http-chunk-size=1M'],
+    ['--http-chunk-size=1M'],
     // Additional options can be given for calling `child_process.execFile()`.
     { cwd: __dirname },
   );

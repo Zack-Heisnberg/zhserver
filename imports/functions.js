@@ -125,8 +125,8 @@ const getlink = async ({ link, acti, type, vw, ghandle }, socket, user, storage,
               break;
             case 2:
               // download
-              zemit(info._filename, storage, user, socket, 'message', 'download not made yet lel', false);
-              downonly(link, storage, user, socket);
+              zemit(storage, user, socket, 'message', 'download onlu 10mb', false);
+              downonly(info._filename, link, storage, user, socket);
               //callback(user, 'download');
               break;
             case 3:

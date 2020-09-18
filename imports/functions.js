@@ -15,6 +15,15 @@ const ffmpeg = require('fluent-ffmpeg');
 let counter = {};
 const zemit = async function zemit(storage, user, socket, event, message, persist, curdpart) {
   logger.info('Invoked emit function');
+  if (event === 'info') {
+    return;
+  }
+  if (event === 'ru') {
+    return;
+  }
+  if (event === 'rd') {
+    return;
+  }
   if (persist) {
     if (event === 'message') {
       let errors = await storage.getItem('Surfer-PERSISTE-' + user + '-Err');

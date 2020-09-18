@@ -41,8 +41,8 @@ io.on('connection', function(socket) {
           responseType: 'stream',
         });
         socket.emit('message', 'Starting download');
-        rimraf.sync(Path.resolve(__dirname, 'mhtml'));
-        fs.mkdirSync('mhtml');
+        // rimraf.sync(Path.resolve(__dirname, 'mhtml'));
+        // fs.mkdirSync('mhtml');
         if (zip === 1) {
           name = Path.resolve(__dirname, 'mhtml', 'zack.zip');
         } else {

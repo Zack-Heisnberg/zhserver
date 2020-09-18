@@ -34,52 +34,52 @@ async function startup() {
     logger.info('Connected' + socket.id);
     // Login In
     let user = false;
-    socket.once('login', data => {
-      Events.loginEvent(storage, socket, data, callback => {
-        user = callback;
-        Functions.emit(storage, user, socket, 'Logged In', 'Hello User', false);
-        socket.on('getlink', data => {
-          Functions.getlink(data, socket, user, storage, browser);
-        });
-        socket.on('getplink', async data => {
-          let datagot = await storage.getItem('YTDL-PERSISTE-' + user + '-filepart-' + data);
-          socket.emit('response', datagot);
-        });
-        socket.on('important', async data => {
-          logger.info('Invoked important function');
-          if ((await storage.getItem('CURID-' + data.user)) !== socket.id) {
-            Functions.emit(storage, user, socket, 'message', 'UNAUTHORIZED !!!', false);
-            logger.error('UNAUTH' + data.user);
-          } else {
-            const ru = await storage.getItem('PERSISTE-' + data.user + '-ru');
-            Functions.emit(storage, data.user, socket, 'ru', ru, false);
-            const rd = await storage.getItem('PERSISTE-' + data.user + '-rd');
-            Functions.emit(storage, data.user, socket, 'rd', rd, false);
-            const link = await storage.getItem('Surfer-PERSISTE-' + data.user + '-filelink');
-            if (link !== 'New') {
-              Functions.emit(storage, data.user, socket, 'filelink', link, false);
-            } else {
-              let errors = await storage.getItem('Surfer-PERSISTE-' + data.user + '-Err');
-              errors.map(value => {
-                Functions.emit(storage, data.user, socket, 'message', value, false);
-              });
-            }
-          }
-        });
+    //  socket.once('login', data => {
+    Events.loginEvent(storage, socket => {
+      user = 'zack';
+      Functions.emit(storage, user, socket, 'Logged In', 'Hello User', false);
+      socket.on('getlink', data => {
+        Functions.getlink(data, socket, user, storage, browser);
       });
-    });
-    setTimeout(() => {
-      if (!user) {
-        logger.info('Disconneting non logged' + socket.id);
-        for (let i = 0; i < connected.length; i++) {
-          if (connected[i] === socket.id) {
-            // console.log(connected[i] + ' just disconnected');
-            connected.splice(i, 1);
+      socket.on('getplink', async data => {
+        let datagot = await storage.getItem('YTDL-PERSISTE-' + user + '-filepart-' + data);
+        socket.emit('response', datagot);
+      });
+      socket.on('important', async data => {
+        logger.info('Invoked important function');
+        if ((await storage.getItem('CURID-' + data.user)) !== socket.id) {
+          Functions.emit(storage, user, socket, 'message', 'UNAUTHORIZED !!!', false);
+          logger.error('UNAUTH' + data.user);
+        } else {
+          const ru = await storage.getItem('PERSISTE-' + data.user + '-ru');
+          Functions.emit(storage, data.user, socket, 'ru', ru, false);
+          const rd = await storage.getItem('PERSISTE-' + data.user + '-rd');
+          Functions.emit(storage, data.user, socket, 'rd', rd, false);
+          const link = await storage.getItem('Surfer-PERSISTE-' + data.user + '-filelink');
+          if (link !== 'New') {
+            Functions.emit(storage, data.user, socket, 'filelink', link, false);
+          } else {
+            let errors = await storage.getItem('Surfer-PERSISTE-' + data.user + '-Err');
+            errors.map(value => {
+              Functions.emit(storage, data.user, socket, 'message', value, false);
+            });
           }
         }
-        socket.disconnect();
-      }
-    }, 10000);
+      });
+    });
+    // });
+    // setTimeout(() => {
+    //   if (!user) {
+    //     logger.info('Disconneting non logged' + socket.id);
+    //     for (let i = 0; i < connected.length; i++) {
+    //       if (connected[i] === socket.id) {
+    //         // console.log(connected[i] + ' just disconnected');
+    //         connected.splice(i, 1);
+    //       }
+    //     }
+    //     socket.disconnect();
+    //   }
+    // }, 10000);
   });
   boot();
 }

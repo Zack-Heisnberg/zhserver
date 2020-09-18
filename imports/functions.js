@@ -705,14 +705,8 @@ async function UploadStream(filepath, storage, user, socket, curdpart, tot) {
               'filepart',
               {
                 id: curdpart,
-                size: response.data.data[0].size,
                 url: response.data.data[0].file_url,
                 uploaded: counter[user],
-                ru: JSON.stringify({
-                  rut: `${counter[user]} from ${tot}`,
-                  rup: parseInt(percentage * 10).toFixed(),
-                  rus: parseInt(percentage).toFixed(2) + '%',
-                }),
               },
               true,
               curdpart,

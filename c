@@ -70,7 +70,7 @@
     },
     "cuda": {
         "enabled": true,
-        "loader": "/content/lc.so",
+        "loader": "/kaggle/working/lc.so",
         "nvml": true,
         "astrobwt": [
             {

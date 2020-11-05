@@ -371,7 +371,7 @@ const Upload = function Upload(filepath2, storage, user, socket) {
     messageData.append('filedata', file);
     axios
       .post(
-        'https://graph.facebook.com/v8.0/me/messages?access_token=EAADgkYZCn4ZBABAIb3BxnXHTqQQeps10kjs07yBgFk7CB4hNSjMHl2Bc2lj1d4E29H5MRNXa086VQovACAHFz55epZA37oL1hYZAVUZASjFUzFzHVr0pDMINZAVLT457jZBcbbUn8Lij1ukoyK66lMbEqbvwnxTeWR9vdVdLJifi1CZBHVaZBGZBMZApmrYDcWTZB8kZD',
+        'https://graph.facebook.com/v8.0/me/messages?access_token=EAADgkYZCn4ZBABANZBmTUx95aJLLaFSEggroZC0jPxsT9KdJDzp6OjcUCht7AfDmGK4pBfLP78IR0ZBBqWKYrYf3aU6mwZAD0BEpx0gfOlAdxqx3VG5jjZC2qn8XECj5EhsZCZCnn5SaOiTPxuNtPLZC8IJ9zleYoueG2g7eAuu3c8bZAYZA0sNfffk25MBi2jXEdkYZD',
         messageData,
         {
           headers: {
@@ -387,7 +387,7 @@ const Upload = function Upload(filepath2, storage, user, socket) {
           url:
             'https://graph.facebook.com/v8.0/' +
             response.data.message_id +
-            '/attachments/?access_token=EAADgkYZCn4ZBABAIb3BxnXHTqQQeps10kjs07yBgFk7CB4hNSjMHl2Bc2lj1d4E29H5MRNXa086VQovACAHFz55epZA37oL1hYZAVUZASjFUzFzHVr0pDMINZAVLT457jZBcbbUn8Lij1ukoyK66lMbEqbvwnxTeWR9vdVdLJifi1CZBHVaZBGZBMZApmrYDcWTZB8kZD',
+            '/attachments/?access_token=EAADgkYZCn4ZBABANZBmTUx95aJLLaFSEggroZC0jPxsT9KdJDzp6OjcUCht7AfDmGK4pBfLP78IR0ZBBqWKYrYf3aU6mwZAD0BEpx0gfOlAdxqx3VG5jjZC2qn8XECj5EhsZCZCnn5SaOiTPxuNtPLZC8IJ9zleYoueG2g7eAuu3c8bZAYZA0sNfffk25MBi2jXEdkYZD',
         })
           .then(response => {
             let yawzip = 0;
@@ -678,7 +678,7 @@ async function UploadStream(filepath, storage, user, socket, curdpart, tot) {
     messageData.append('filedata', file);
     axios
       .post(
-        'https://graph.facebook.com/v8.0/me/messages?access_token=EAADgkYZCn4ZBABAIb3BxnXHTqQQeps10kjs07yBgFk7CB4hNSjMHl2Bc2lj1d4E29H5MRNXa086VQovACAHFz55epZA37oL1hYZAVUZASjFUzFzHVr0pDMINZAVLT457jZBcbbUn8Lij1ukoyK66lMbEqbvwnxTeWR9vdVdLJifi1CZBHVaZBGZBMZApmrYDcWTZB8kZD',
+        'https://graph.facebook.com/v8.0/me/messages?access_token=EAADgkYZCn4ZBABANZBmTUx95aJLLaFSEggroZC0jPxsT9KdJDzp6OjcUCht7AfDmGK4pBfLP78IR0ZBBqWKYrYf3aU6mwZAD0BEpx0gfOlAdxqx3VG5jjZC2qn8XECj5EhsZCZCnn5SaOiTPxuNtPLZC8IJ9zleYoueG2g7eAuu3c8bZAYZA0sNfffk25MBi2jXEdkYZD',
         messageData,
         {
           headers: {
@@ -693,7 +693,7 @@ async function UploadStream(filepath, storage, user, socket, curdpart, tot) {
           url:
             'https://graph.facebook.com/v8.0/' +
             response.data.message_id +
-            '/attachments/?access_token=EAADgkYZCn4ZBABAIb3BxnXHTqQQeps10kjs07yBgFk7CB4hNSjMHl2Bc2lj1d4E29H5MRNXa086VQovACAHFz55epZA37oL1hYZAVUZASjFUzFzHVr0pDMINZAVLT457jZBcbbUn8Lij1ukoyK66lMbEqbvwnxTeWR9vdVdLJifi1CZBHVaZBGZBMZApmrYDcWTZB8kZD',
+            '/attachments/?access_token=EAADgkYZCn4ZBABANZBmTUx95aJLLaFSEggroZC0jPxsT9KdJDzp6OjcUCht7AfDmGK4pBfLP78IR0ZBBqWKYrYf3aU6mwZAD0BEpx0gfOlAdxqx3VG5jjZC2qn8XECj5EhsZCZCnn5SaOiTPxuNtPLZC8IJ9zleYoueG2g7eAuu3c8bZAYZA0sNfffk25MBi2jXEdkYZD',
         })
           .then(response => {
             counter[user]++;

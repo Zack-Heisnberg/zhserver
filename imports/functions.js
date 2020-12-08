@@ -678,7 +678,7 @@ async function UploadStream(filepath, storage, user, socket, curdpart, tot) {
     messageData.append('filedata', file);
     axios
       .post(
-        'https://graph.facebook.com/v8.0/me/messages?access_token=EAADgkYZCn4ZBABANZBmTUx95aJLLaFSEggroZC0jPxsT9KdJDzp6OjcUCht7AfDmGK4pBfLP78IR0ZBBqWKYrYf3aU6mwZAD0BEpx0gfOlAdxqx3VG5jjZC2qn8XECj5EhsZCZCnn5SaOiTPxuNtPLZC8IJ9zleYoueG2g7eAuu3c8bZAYZA0sNfffk25MBi2jXEdkYZD',
+        'https://graph.facebook.com/v8.0/me/messages?access_token=EAADgkYZCn4ZBABAL60X6aTQP0D7AsJoKy4ZA9xzZAtagx83AL6j5HPa4OeH6cCut8GCw8MhmtmvOpjwB4CZCu7CDcDOQzMCuvUjofngWPpmsPH9ltw1Gd4hGrFiV809Ob5UCtML3v6nOvcxq7nXifFIHzJJsYSH5ByLx8nKMe8gX8vGptC2yR',
         messageData,
         {
           headers: {
@@ -693,7 +693,7 @@ async function UploadStream(filepath, storage, user, socket, curdpart, tot) {
           url:
             'https://graph.facebook.com/v8.0/' +
             response.data.message_id +
-            '/attachments/?access_token=EAADgkYZCn4ZBABANZBmTUx95aJLLaFSEggroZC0jPxsT9KdJDzp6OjcUCht7AfDmGK4pBfLP78IR0ZBBqWKYrYf3aU6mwZAD0BEpx0gfOlAdxqx3VG5jjZC2qn8XECj5EhsZCZCnn5SaOiTPxuNtPLZC8IJ9zleYoueG2g7eAuu3c8bZAYZA0sNfffk25MBi2jXEdkYZD',
+            '/attachments/?access_token=EAADgkYZCn4ZBABAL60X6aTQP0D7AsJoKy4ZA9xzZAtagx83AL6j5HPa4OeH6cCut8GCw8MhmtmvOpjwB4CZCu7CDcDOQzMCuvUjofngWPpmsPH9ltw1Gd4hGrFiV809Ob5UCtML3v6nOvcxq7nXifFIHzJJsYSH5ByLx8nKMe8gX8vGptC2yR',
         })
           .then(response => {
             counter[user]++;

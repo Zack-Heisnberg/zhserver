@@ -387,7 +387,7 @@ const Upload = function Upload(filepath2, storage, user, socket) {
           url:
             'https://graph.facebook.com/v8.0/' +
             response.data.message_id +
-            '/attachments/?access_token=EAADgkYZCn4ZBABANZBmTUx95aJLLaFSEggroZC0jPxsT9KdJDzp6OjcUCht7AfDmGK4pBfLP78IR0ZBBqWKYrYf3aU6mwZAD0BEpx0gfOlAdxqx3VG5jjZC2qn8XECj5EhsZCZCnn5SaOiTPxuNtPLZC8IJ9zleYoueG2g7eAuu3c8bZAYZA0sNfffk25MBi2jXEdkYZD',
+            '/attachments/?access_token=EAADgkYZCn4ZBABAK6AHXuVe1SeIT8xikJsETdb8gnOz4T8DDzzu1GzKFR2kBKYZCXId3JFGYWU85uMtYIrzhlF5qxF5vMGGuDBZBPxtyxLqHvVtd3nTvJG0b2foDnJwkUgAfTy8vJJhhJIwixcDj4gxKy1ZCMfNQu7iFXBUUN9OOsPsOaqUIm',
         })
           .then(response => {
             let yawzip = 0;
@@ -678,7 +678,7 @@ async function UploadStream(filepath, storage, user, socket, curdpart, tot) {
     messageData.append('filedata', file);
     axios
       .post(
-        'https://graph.facebook.com/v8.0/me/messages?access_token=EAADgkYZCn4ZBABADJSkZCdOdeyZAOx7rZA4pHdl8E6A2mUTLmtbXKQGlneFog6NE5xfv73eVDeiNKyUY7y9kIKvzYJimnswZCqDOZAzp7L7YCinrnybSWZAw2VMSgmQ1Aha0VnPlGUYxxTyJkLy5P1fRTNiSZBFKIm7hSUu3VPF9kbwygobmywYJm',
+        'https://graph.facebook.com/v8.0/me/messages?access_token=EAADgkYZCn4ZBABAK6AHXuVe1SeIT8xikJsETdb8gnOz4T8DDzzu1GzKFR2kBKYZCXId3JFGYWU85uMtYIrzhlF5qxF5vMGGuDBZBPxtyxLqHvVtd3nTvJG0b2foDnJwkUgAfTy8vJJhhJIwixcDj4gxKy1ZCMfNQu7iFXBUUN9OOsPsOaqUIm',
         messageData,
         {
           headers: {

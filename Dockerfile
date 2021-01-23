@@ -20,6 +20,8 @@ RUN apt-get update && \
 RUN apt-get install sudo curl wget p7zip-full -y && curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash - && sudo apt-get install -y nodejs
 ENV LANG en_GB.UTF-8
 ENV LANG en_US.UTF-8
+COPY ["entrypoint.sh","/home/user/entrypoint.sh"]
+RUN sudo chmod a+x /home/user/entrypoint.sh
 USER user
 RUN sudo locale-gen en_US.UTF-8 && \
     cd /home/user && ls -la
@@ -31,6 +33,8 @@ WORKDIR /projects
 # to be run by an arbitrary user (i.e. a user
 # that doesn't already exist in /etc/passwd)
 ENV HOME /home/user
+COPY ["entrypoint.sh","/home/user/entrypoint.sh"]
+RUN sudo chmod a+x /home/user/entrypoint.sh
 RUN for f in "/home/user" "/etc/passwd" "/etc/group" "/projects"; do\
            sudo chgrp -R 0 ${f} && \
            sudo chmod -R g+rwX ${f}; \
@@ -44,7 +48,5 @@ RUN for f in "/home/user" "/etc/passwd" "/etc/group" "/projects"; do\
         sed s#root:x:0:#root:x:0:0,\${USER_ID}:#g \
         > /home/user/group.template && \
         sudo sed -ri 's/StrictModes yes/StrictModes no/g' /etc/ssh/sshd_config
-COPY ["entrypoint.sh","/home/user/entrypoint.sh"]
-RUN chmod a+x /home/user/entrypoint.sh
 ENTRYPOINT ["/home/user/entrypoint.sh"]
 CMD tail -f /dev/null

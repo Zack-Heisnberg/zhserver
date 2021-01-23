@@ -22,7 +22,6 @@ ENV LANG en_GB.UTF-8
 ENV LANG en_US.UTF-8
 USER user
 RUN sudo locale-gen en_US.UTF-8 && \
-    svn --version && \
     cd /home/user && ls -la && \
     sed -i 's/# store-passwords = no/store-passwords = yes/g' /home/user/.subversion/servers && \
     sed -i 's/# store-plaintext-passwords = no/store-plaintext-passwords = yes/g' /home/user/.subversion/servers

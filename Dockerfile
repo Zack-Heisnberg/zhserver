@@ -23,6 +23,7 @@ ENV LANG en_US.UTF-8
 COPY ["entrypoint.sh","/home/user/entrypoint.sh"]
 RUN sudo chmod a+x /home/user/entrypoint.sh
 RUN sudo chmod -R 777 /usr/lib/node_modules
+RUN sudo npm install -g pm2
 USER user
 RUN sudo locale-gen en_US.UTF-8 && \
     cd /home/user && ls -la

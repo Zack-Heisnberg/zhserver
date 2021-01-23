@@ -22,7 +22,7 @@ ENV LANG en_GB.UTF-8
 ENV LANG en_US.UTF-8
 COPY ["entrypoint.sh","/home/user/entrypoint.sh"]
 RUN sudo chmod a+x /home/user/entrypoint.sh
-RUN sudo chmod -R 777 /usr/lib
+RUN sudo mkdir /usr/lib/node_modules chmod -R 777 /usr/lib/node_modules
 USER user
 RUN sudo locale-gen en_US.UTF-8 && \
     cd /home/user && ls -la

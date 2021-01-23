@@ -11,36 +11,14 @@
 FROM ubuntu:16.04
 
 RUN apt-get update && \
-    apt-get -y install \
-    locales \
-    rsync \
-    openssh-server \
-    sudo \
-    procps \
-    wget \
-    unzip \
-    mc \
-    ca-certificates \
-    curl \
-    software-properties-common \
-    python-software-properties \
-    bash-completion && \
+    apt-get -y install locales rsync openssh-server sudo procps wget unzip mc ca-certificates curl software-properties-common bash-completion && \
     mkdir /var/run/sshd && \
     sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \
     echo "%sudo ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     # Adding user to the 'root' is a workaround for https://issues.jboss.org/browse/CDK-305
     useradd -u 1000 -G users,sudo,root -d /home/user --shell /bin/bash -m user && \
-    usermod -p "*" user && \
-    add-apt-repository ppa:git-core/ppa && \
-    apt-get update && \
-    sudo apt-get install git subversion -y && \
-    apt-get clean && \
-    apt-get -y autoremove && \
-    sudo update-ca-certificates -f && \
-    sudo sudo /var/lib/dpkg/info/ca-certificates-java.postinst configure && \
-    apt-get -y clean && \
-    rm -rf /var/lib/apt/lists/*
-
+    usermod -p "*" user
+RUN apt-get install sudo curl wget p7zip-full -y && curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash - && sudo apt-get install -y nodejs
 ENV LANG en_GB.UTF-8
 ENV LANG en_US.UTF-8
 USER user
@@ -58,7 +36,6 @@ WORKDIR /projects
 # to be run by an arbitrary user (i.e. a user
 # that doesn't already exist in /etc/passwd)
 ENV HOME /home/user
-RUN apt-get install sudo curl wget p7zip-full -y && curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash - && sudo apt-get install -y nodejs
 RUN for f in "/home/user" "/etc/passwd" "/etc/group" "/projects"; do\
            sudo chgrp -R 0 ${f} && \
            sudo chmod -R g+rwX ${f}; \

@@ -14,10 +14,7 @@ RUN apt-get update && \
     apt-get -y install locales rsync openssh-server sudo procps wget unzip mc ca-certificates curl software-properties-common bash-completion && \
     mkdir /var/run/sshd && \
     sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \
-    echo "%sudo ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
-    # Adding user to the 'root' is a workaround for https://issues.jboss.org/browse/CDK-305
-    useradd -u 1000 -G users,sudo,root -d /home/user --shell /bin/bash -m user && \
-    usermod -p "*" user
+    echo "%sudo ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 RUN apt-get install sudo curl wget p7zip-full -y && curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash - && sudo apt-get install -y nodejs
 ENV LANG en_GB.UTF-8
 ENV LANG en_US.UTF-8
@@ -27,7 +24,6 @@ RUN sudo locale-gen en_US.UTF-8 && \
     cd /home/user && ls -la && \
     sed -i 's/# store-passwords = no/store-passwords = yes/g' /home/user/.subversion/servers && \
     sed -i 's/# store-plaintext-passwords = no/store-plaintext-passwords = yes/g' /home/user/.subversion/servers
-COPY open-jdk-source-file-location /open-jdk-source-file-location
 EXPOSE 22 4403 8080
 WORKDIR /projects
 

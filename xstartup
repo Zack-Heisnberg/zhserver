@@ -1,5 +1,3 @@
 #!/bin/sh
-xrdb $HOME/.Xresources
-xsetroot -solid grey
 lxterminal &
 /usr/bin/lxsession -s LXDE &

@@ -1,3 +1,4 @@
 #!/bin/sh
-lxterminal &
+xrdb $HOME/.Xresources
+xsetroot -solid black
 /usr/bin/lxsession -s LXDE &

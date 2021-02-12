@@ -15,3 +15,8 @@ res.send(url)
 res.send(e.message)
 }
 })
+
+app.listen(process.env.PORT, () => {
+  console.log(`Example app listening at https://${process.env.HOSTNAME + process.env.PORT}`)
+})
+
